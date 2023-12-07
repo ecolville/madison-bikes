@@ -4,6 +4,9 @@ let originMarker;
 let infowindow;
 let circles = [];
 let repairStations = [];
+let distCalcs = [];
+let stationDistCalcs = {}; // Empty object
+
 // The location of Madison, WI
 const MADISON = { lat: 43.0722, lng: -89.4008 };
 
@@ -146,6 +149,22 @@ const initAutocompleteWidget = () => {
 };
 
 async function calculateDistances(origin, repairStations) {
+  // Reduce number of repairStations from entire list to rough calculation of 25 closest
+  
+  for (let i = 0; i < repairStations.length; i++){
+    let a = origin.toJSON().lat - repairStations[i].geometry.coordinates[1];
+    let b = origin.toJSON().lng - repairStations[i].geometry.coordinates[0];
+    let c = Math.sqrt(a**2 + b**2)
+    let distCalc = c;
+    distCalcs.push(distCalc);
+
+    stationDistCalcs[i].repairStation = repairStations[i];
+    stationDistCalcs[i].distCalc = distCalc;
+  }
+
+  console.log(stationDistCalcs);
+
+
   // Retrieve the distances of each store from the origin
   // The returned list will be in the same order as the destinations list
   const response = await getDistanceMatrix({
