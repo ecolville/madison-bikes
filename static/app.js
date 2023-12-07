@@ -22,13 +22,14 @@ async function initialize() {
 }
 
 const initMap = () => {
-  // TODO: Start Distance Matrix service
+  distanceMatrixService = new google.maps.DistanceMatrixService();
+  console.log("Map initiated");
 
   // The map, centered on Madison, WI
   map = new google.maps.Map(document.querySelector("#map"), {
     center: MADISON,
     zoom: 14,
-    // mapId: 'YOUR_MAP_ID_HERE',
+    // mapId: 'YOUR_MAP_ID_HERE', // used for optional Maps styling
     clickableIcons: false,
     fullscreenControl: false,
     mapTypeControl: false,
@@ -48,7 +49,7 @@ const fetchAndRenderRepairStations = async (center) => {
 };
 
 const fetchRepairStations = async (center) => {
-  const url = `/data/dropoffs`;
+  const url = `/data/dropoffs?centerLat=${center.lat}&centerLng=${center.lng}`;
   const response = await fetch(url);
   return response.json();
 };
@@ -78,6 +79,7 @@ const stationToCircle = (station, map, infowindow) => {
 
     infowindow.setContent(contentString);
     infowindow.setPosition({ lat, lng });
+    infowindow.setOptions({ pixelOffset: new google.maps.Size(0, -10) });
     infowindow.open(map);
   });
 
@@ -85,6 +87,7 @@ const stationToCircle = (station, map, infowindow) => {
 };
 
 const initAutocompleteWidget = () => {
+  console.log("Autocomplete widget");
   // Add search bar for auto-complete
   // Build and add the search bar
   const placesAutoCompleteCardElement = document.getElementById("pac-card");
@@ -117,7 +120,7 @@ const initAutocompleteWidget = () => {
   originMarker.setVisible(false);
   let originLocation = map.getCenter();
   autocomplete.addListener("place_changed", async () => {
-    // circles.forEach((c) => c.setMap(null)); // clear existing stores
+    circles.forEach((c) => c.setMap(null)); // clear existing repair staions
     originMarker.setVisible(false);
     originLocation = map.getCenter();
     const place = autocomplete.getPlace();
@@ -135,7 +138,80 @@ const initAutocompleteWidget = () => {
     originMarker.setPosition(originLocation);
     originMarker.setVisible(true);
 
-    // await fetchAndRenderStores(originLocation.toJSON());
-    // TODO: Calculate the closest stores
+    await fetchAndRenderRepairStations(originLocation.toJSON());
+    
+    // Use the selected address as the origin to calculate distances
+    // to each of the store locations
+    await calculateDistances(originLocation, stations);
+    console.log("stations: ", stations);
+    renderStationsPanel()
   });
+};
+
+async function calculateDistances(origin, stations) {
+  console.log("Calculate Distances");
+  // Retrieve the distances of each store from the origin
+  // The returned list will be in the same order as the destinations list
+  const response = await getDistanceMatrix({
+    origins: [origin],
+    destinations: stations.map((station) => {
+      const [lng, lat] = station.geometry.coordinates;
+      return { lat, lng };
+    }),
+    travelMode: google.maps.TravelMode.DRIVING,
+    unitSystem: google.maps.UnitSystem.METRIC,
+  });
+  response.rows[0].elements.forEach((element, index) => {
+    stations[index].properties.distanceText = element.distance.text;
+    stations[index].properties.distanceValue = element.distance.value;
+  });
+}
+
+const getDistanceMatrix = (request) => {
+  return new Promise((resolve, reject) => {
+    const callback = (response, status) => {
+      if (status === google.maps.DistanceMatrixStatus.OK) {
+        resolve(response);
+      } else {
+        reject(response);
+      }
+    };
+    distanceMatrixService.getDistanceMatrix(request, callback);
+  });
+};
+
+function renderStationsPanel() {
+  const panel = document.getElementById("panel");
+
+  if (stations.length == 0) {
+    panel.classList.remove("open");
+    return;
+  }
+
+  // Clear the previous panel rows
+  while (panel.lastChild) {
+    panel.removeChild(panel.lastChild);
+  }
+  stations
+    .sort((a, b) => a.properties.distanceValue - b.properties.distanceValue)
+    .forEach((station) => {
+      panel.appendChild(stationToPanelRow(station));
+    });
+  // Open the panel
+  panel.classList.add("open");
+  return;
+}
+
+const stationToPanelRow = (station) => {
+  // Add store details with text formatting
+  const rowElement = document.createElement("div");
+  const nameElement = document.createElement("p");
+  nameElement.classList.add("place");
+  nameElement.textContent = station.properties.Description;
+  rowElement.appendChild(nameElement);
+  const distanceTextElement = document.createElement("p");
+  distanceTextElement.classList.add("distanceText");
+  distanceTextElement.textContent = station.properties.distanceText;
+  rowElement.appendChild(distanceTextElement);
+  return rowElement;
 };
