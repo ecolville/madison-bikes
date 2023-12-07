@@ -23,7 +23,6 @@ async function initialize() {
 
 const initMap = () => {
   distanceMatrixService = new google.maps.DistanceMatrixService();
-  console.log("Map initiated");
 
   // The map, centered on Madison, WI
   map = new google.maps.Map(document.querySelector("#map"), {
@@ -87,7 +86,6 @@ const stationToCircle = (station, map, infowindow) => {
 };
 
 const initAutocompleteWidget = () => {
-  console.log("Autocomplete widget");
   // Add search bar for auto-complete
   // Build and add the search bar
   const placesAutoCompleteCardElement = document.getElementById("pac-card");
@@ -142,19 +140,17 @@ const initAutocompleteWidget = () => {
     
     // Use the selected address as the origin to calculate distances
     // to each of the store locations
-    await calculateDistances(originLocation, stations);
-    console.log("stations: ", stations);
-    renderStationsPanel()
+    await calculateDistances(originLocation, repairStations);
+    renderRepairStationsPanel()
   });
 };
 
-async function calculateDistances(origin, stations) {
-  console.log("Calculate Distances");
+async function calculateDistances(origin, repairStations) {
   // Retrieve the distances of each store from the origin
   // The returned list will be in the same order as the destinations list
   const response = await getDistanceMatrix({
     origins: [origin],
-    destinations: stations.map((station) => {
+    destinations: repairStations.map((station) => {
       const [lng, lat] = station.geometry.coordinates;
       return { lat, lng };
     }),
@@ -162,8 +158,8 @@ async function calculateDistances(origin, stations) {
     unitSystem: google.maps.UnitSystem.METRIC,
   });
   response.rows[0].elements.forEach((element, index) => {
-    stations[index].properties.distanceText = element.distance.text;
-    stations[index].properties.distanceValue = element.distance.value;
+    repairStations[index].properties.distanceText = element.distance.text;
+    repairStations[index].properties.distanceValue = element.distance.value;
   });
 }
 
@@ -171,8 +167,10 @@ const getDistanceMatrix = (request) => {
   return new Promise((resolve, reject) => {
     const callback = (response, status) => {
       if (status === google.maps.DistanceMatrixStatus.OK) {
+        console.log("status OK");
         resolve(response);
       } else {
+        console.log("status not ok:", status);
         reject(response);
       }
     };
@@ -180,10 +178,10 @@ const getDistanceMatrix = (request) => {
   });
 };
 
-function renderStationsPanel() {
+function renderRepairStationsPanel() {
   const panel = document.getElementById("panel");
 
-  if (stations.length == 0) {
+  if (repairStations.length == 0) {
     panel.classList.remove("open");
     return;
   }
@@ -192,7 +190,7 @@ function renderStationsPanel() {
   while (panel.lastChild) {
     panel.removeChild(panel.lastChild);
   }
-  stations
+  repairStations
     .sort((a, b) => a.properties.distanceValue - b.properties.distanceValue)
     .forEach((station) => {
       panel.appendChild(stationToPanelRow(station));
@@ -203,7 +201,7 @@ function renderStationsPanel() {
 }
 
 const stationToPanelRow = (station) => {
-  // Add store details with text formatting
+  // Add station details with text formatting
   const rowElement = document.createElement("div");
   const nameElement = document.createElement("p");
   nameElement.classList.add("place");
