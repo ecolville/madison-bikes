@@ -219,6 +219,7 @@ function renderRepairStationsPanel() {
     });
   // Open the panel
   panel.classList.add("open");
+  panel.insertAdjacentHTML("beforebegin",'<div id="pac-title">Locations sorted by distance</div>');
   return;
 }
 
