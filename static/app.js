@@ -5,7 +5,8 @@ let infowindow;
 let circles = [];
 let repairStations = [];
 let distCalcs = [];
-let stationDistCalcs = {}; // Empty object
+let stationDistCalcs = [];
+let slicedRepairStations = [];
 
 // The location of Madison, WI
 const MADISON = { lat: 43.0722, lng: -89.4008 };
@@ -149,27 +150,31 @@ const initAutocompleteWidget = () => {
 };
 
 async function calculateDistances(origin, repairStations) {
-  // Reduce number of repairStations from entire list to rough calculation of 25 closest
   
-  for (let i = 0; i < repairStations.length; i++){
+  // Reduce number of repairStations from entire list to rough calculation of 25 closest
+    for (let i = 0; i < repairStations.length; i++){
     let a = origin.toJSON().lat - repairStations[i].geometry.coordinates[1];
     let b = origin.toJSON().lng - repairStations[i].geometry.coordinates[0];
     let c = Math.sqrt(a**2 + b**2)
     let distCalc = c;
     distCalcs.push(distCalc);
 
-    stationDistCalcs[i].repairStation = repairStations[i];
-    stationDistCalcs[i].distCalc = distCalc;
+    let obj = {};
+    obj = {'station': repairStations[i], 'distanceCalc': distCalc};
+    stationDistCalcs.push(obj);
   }
+  
+  stationDistCalcs.sort((a,b) => a.distanceCalc - b.distanceCalc); // sorts by lowest to greatest distanceCalc
+  const slicedStationDistCalcs = stationDistCalcs.slice(0, 25); // creates a new array of the lowest 25 
 
-  console.log(stationDistCalcs);
-
+  // builds a new array of just the repairStations from the lowest 25
+  slicedStationDistCalcs.forEach((element) => { slicedRepairStations.push(element.station) });
 
   // Retrieve the distances of each store from the origin
   // The returned list will be in the same order as the destinations list
   const response = await getDistanceMatrix({
     origins: [origin],
-    destinations: repairStations.map((station) => {
+    destinations: slicedRepairStations.map((station) => {
       const [lng, lat] = station.geometry.coordinates;
       return { lat, lng };
     }),
@@ -177,8 +182,8 @@ async function calculateDistances(origin, repairStations) {
     unitSystem: google.maps.UnitSystem.METRIC,
   });
   response.rows[0].elements.forEach((element, index) => {
-    repairStations[index].properties.distanceText = element.distance.text;
-    repairStations[index].properties.distanceValue = element.distance.value;
+    slicedRepairStations[index].properties.distanceText = element.distance.text;
+    slicedRepairStations[index].properties.distanceValue = element.distance.value;
   });
 }
 
@@ -186,10 +191,8 @@ const getDistanceMatrix = (request) => {
   return new Promise((resolve, reject) => {
     const callback = (response, status) => {
       if (status === google.maps.DistanceMatrixStatus.OK) {
-        console.log("status OK");
         resolve(response);
       } else {
-        console.log("status not ok:", status);
         reject(response);
       }
     };
@@ -200,7 +203,7 @@ const getDistanceMatrix = (request) => {
 function renderRepairStationsPanel() {
   const panel = document.getElementById("panel");
 
-  if (repairStations.length == 0) {
+  if (slicedRepairStations.length == 0) {
     panel.classList.remove("open");
     return;
   }
@@ -209,7 +212,7 @@ function renderRepairStationsPanel() {
   while (panel.lastChild) {
     panel.removeChild(panel.lastChild);
   }
-  repairStations
+  slicedRepairStations
     .sort((a, b) => a.properties.distanceValue - b.properties.distanceValue)
     .forEach((station) => {
       panel.appendChild(stationToPanelRow(station));
