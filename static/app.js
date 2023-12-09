@@ -4,6 +4,10 @@ let originMarker;
 let infowindow;
 let circles = [];
 let repairStations = [];
+let distCalcs = [];
+let stationDistCalcs = [];
+let slicedRepairStations = [];
+
 // The location of Madison, WI
 const MADISON = { lat: 43.0722, lng: -89.4008 };
 
@@ -19,16 +23,19 @@ async function initialize() {
 
   // Initialize the Places Autocomplete Widget
   initAutocompleteWidget();
+
+  // Initialize the Maps Geolocation Widget
+  initGeolocationWidget();
 }
 
 const initMap = () => {
-  // TODO: Start Distance Matrix service
+  distanceMatrixService = new google.maps.DistanceMatrixService();
 
   // The map, centered on Madison, WI
   map = new google.maps.Map(document.querySelector("#map"), {
     center: MADISON,
     zoom: 14,
-    // mapId: 'YOUR_MAP_ID_HERE',
+    // mapId: 'YOUR_MAP_ID_HERE', // used for optional Maps styling
     clickableIcons: false,
     fullscreenControl: false,
     mapTypeControl: false,
@@ -48,7 +55,7 @@ const fetchAndRenderRepairStations = async (center) => {
 };
 
 const fetchRepairStations = async (center) => {
-  const url = `/data/dropoffs`;
+  const url = `/data/dropoffs?centerLat=${center.lat}&centerLng=${center.lng}`;
   const response = await fetch(url);
   return response.json();
 };
@@ -78,6 +85,7 @@ const stationToCircle = (station, map, infowindow) => {
 
     infowindow.setContent(contentString);
     infowindow.setPosition({ lat, lng });
+    infowindow.setOptions({ pixelOffset: new google.maps.Size(0, -10) });
     infowindow.open(map);
   });
 
@@ -116,8 +124,9 @@ const initAutocompleteWidget = () => {
   originMarker = new google.maps.Marker({ map: map });
   originMarker.setVisible(false);
   let originLocation = map.getCenter();
+  
   autocomplete.addListener("place_changed", async () => {
-    // circles.forEach((c) => c.setMap(null)); // clear existing stores
+    circles.forEach((c) => c.setMap(null)); // clear existing repair staions
     originMarker.setVisible(false);
     originLocation = map.getCenter();
     const place = autocomplete.getPlace();
@@ -135,7 +144,170 @@ const initAutocompleteWidget = () => {
     originMarker.setPosition(originLocation);
     originMarker.setVisible(true);
 
-    // await fetchAndRenderStores(originLocation.toJSON());
-    // TODO: Calculate the closest stores
+    await fetchAndRenderRepairStations(originLocation.toJSON());
+    
+    // Use the selected address as the origin to calculate distances
+    // to each of the store locations
+    await calculateDistances(originLocation, repairStations);
+    renderRepairStationsPanel()
   });
+};
+
+async function calculateDistances(origin, repairStations) {
+  
+  // Reduce number of repairStations from entire list to rough calculation of 25 closest
+    for (let i = 0; i < repairStations.length; i++){
+    let a = origin.toJSON().lat - repairStations[i].geometry.coordinates[1];
+    let b = origin.toJSON().lng - repairStations[i].geometry.coordinates[0];
+    let c = Math.sqrt(a**2 + b**2)
+    let distCalc = c;
+    distCalcs.push(distCalc);
+
+    let obj = {};
+    obj = {'station': repairStations[i], 'distanceCalc': distCalc};
+    stationDistCalcs.push(obj);
+  }
+  
+  stationDistCalcs.sort((a,b) => a.distanceCalc - b.distanceCalc); // sorts by lowest to greatest distanceCalc
+  const slicedStationDistCalcs = stationDistCalcs.slice(0, 25); // creates a new array of the lowest 25 
+
+  // builds a new array of just the repairStations from the lowest 25
+  slicedStationDistCalcs.forEach((element) => { slicedRepairStations.push(element.station) });
+
+  // Retrieve the distances of each store from the origin
+  // The returned list will be in the same order as the destinations list
+  const response = await getDistanceMatrix({
+    origins: [origin],
+    destinations: slicedRepairStations.map((station) => {
+      const [lng, lat] = station.geometry.coordinates;
+      return { lat, lng };
+    }),
+    travelMode: google.maps.TravelMode.DRIVING,
+    unitSystem: google.maps.UnitSystem.METRIC,
+  });
+  response.rows[0].elements.forEach((element, index) => {
+    slicedRepairStations[index].properties.distanceText = element.distance.text;
+    slicedRepairStations[index].properties.distanceValue = element.distance.value;
+  });
+}
+
+const getDistanceMatrix = (request) => {
+  return new Promise((resolve, reject) => {
+    const callback = (response, status) => {
+      if (status === google.maps.DistanceMatrixStatus.OK) {
+        resolve(response);
+      } else {
+        reject(response);
+      }
+    };
+    distanceMatrixService.getDistanceMatrix(request, callback);
+  });
+};
+
+function renderRepairStationsPanel() {
+  const panel = document.getElementById("panel");
+  
+  if (slicedRepairStations.length == 0) {
+    panel.classList.remove("open");
+    return;
+  }
+
+  // Clear the previous panel rows
+  while (panel.lastChild) {
+    panel.removeChild(panel.lastChild);
+  }
+  panel.appendChild(panelTitle());
+  slicedRepairStations
+    .sort((a, b) => a.properties.distanceValue - b.properties.distanceValue)
+    .forEach((station) => {
+      panel.appendChild(stationToPanelRow(station));
+    });
+  // Open the panel
+  panel.classList.add("open");
+
+  return;
+}
+
+const panelTitle = () => {
+  const rowElement = document.createElement("div");
+  const nameElement = document.createElement("p");
+  nameElement.classList.add("panel-title");
+  nameElement.textContent = "Bicycle Repair Stations by distance to address";
+  rowElement.appendChild(nameElement)
+  console.log("panel title?");
+  return rowElement;
+};
+
+const stationToPanelRow = (station) => {
+  // Add station details with text formatting
+  const rowElement = document.createElement("div");
+  const nameElement = document.createElement("p");
+  nameElement.classList.add("place");
+  nameElement.textContent = station.properties.Description;
+  rowElement.appendChild(nameElement);
+  const distanceTextElement = document.createElement("p");
+  distanceTextElement.classList.add("distanceText");
+  distanceTextElement.textContent = station.properties.distanceText;
+  rowElement.appendChild(distanceTextElement);
+  return rowElement;
+};
+
+const initGeolocationWidget = () => {
+
+  const locationButton = document.createElement("button");
+
+  //const locationButton = document.getElementById("pac-card");
+
+  locationButton.textContent = "Use current location?";
+  locationButton.classList.add("custom-map-control-button");
+  document.getElementById("pac-card").appendChild(locationButton);
+  
+  // Respond when a user selects the geolocation button
+  locationButton.addEventListener("click", () => {
+    // Try HTML5 geolocation.
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+        
+          console.log("Location found");
+          //infoWindow.setContent("Location found.");        
+        
+        },
+        async() => {
+          //put the pos value in the address bar
+          //need to convert lat lang to an address
+          
+          circles.forEach((c) => c.setMap(null)); // clear existing repair staions
+          originMarker.setVisible(false);
+          originLocation = map.getCenter();
+          const place = autocomplete.getPlace();
+          // Recenter the map to the selected address
+          originLocation = place.geometry.location;
+          map.setCenter(originLocation);
+          map.setZoom(15);
+          originMarker.setPosition(originLocation);
+          originMarker.setVisible(true);
+
+          await fetchAndRenderRepairStations(originLocation.toJSON());
+          
+          // Use the selected address as the origin to calculate distances
+          // to each of the store locations
+          await calculateDistances(originLocation, repairStations);
+          renderRepairStationsPanel()
+        },
+      );
+    } else {
+      // Browser doesn't support Geolocation
+      window.alert(
+        browserHasGeolocation
+        ? "Error: The Geolocation service failed."
+        : "Error: Your browser doesn't support geolocation.",
+      );
+    }
+  });
+
 };
