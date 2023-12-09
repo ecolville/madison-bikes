@@ -52,7 +52,7 @@ const pacCard = document.getElementById("pac-card");
 const panel = document.getElementById("panel");
 if (pacCard && panel) {
     const pacCardHeight = pacCard.offsetHeight;
-    panel.style.top = `${pacCardHeight + 20}px`; // 20px for some margin
+    panel.style.top = `${pacCardHeight + 70}px`; // 20px for some margin
     panel.style.display = "block";
 }
 
