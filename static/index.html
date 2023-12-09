@@ -2,27 +2,24 @@
   <head>
     <title>Madison Bike Repair Locations</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
-    <script src="app.js"></script>
+    <script defer src="app.js"></script>
 
     <script
       defer
-      
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmBgSWWPs4Ocit1Fe3gLNtgrU31DzUfKk&v=weekly&libraries=places&callback=initialize" key=AIzaSyCmBgSWWPs4Ocit1Fe3gLNtgrU31DzUfKk&v=weekly&libraries=places&callback=initialize"
     ></script>
   </head>
 
   <body>
     <div id="map"></div>
     <div id="panel" class="closed">  
+      <select id="destination-select">
+      </select>
     </div>
     <div class="hidden">
      <div id="pac-card">
-<<<<<<< HEAD
       <div id="pac-title">Find the nearest location</div>
       <div id="pac-container">
-=======
-       <div id="pac-title">Find the nearest location to...</div>
-       <div id="pac-container">
->>>>>>> f924d9aaa9d6144f140070f861260782bc8a6ee9
          <input
            id="pac-input"
            type="text"

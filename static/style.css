@@ -102,3 +102,8 @@ body {
   padding: 6px 12px;
   margin: 0 !important;
 }
+
+.station-row:hover {
+  cursor: pointer;
+  background-color: #f0f0f0; /* light grey background on hover for indication */
+}

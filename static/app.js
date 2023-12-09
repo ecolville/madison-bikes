@@ -1,70 +1,93 @@
-let distanceMatrixService;
-let map;
-let originMarker;
-let infowindow;
-let circles = [];
-let repairStations = [];
-let distCalcs = [];
-let stationDistCalcs = [];
-let slicedRepairStations = [];
+//Global variables
+let map, infowindow, originMarker, userCurrentLocation;
+let distanceMatrixService, directionsService, directionsRenderer;
+let circles = [], repairStations = [], distCalcs = [], stationDistCalcs = [], slicedRepairStations = [];
 
-// The location of Madison, WI
+//The location of Madison, WI
 const MADISON = { lat: 43.0722, lng: -89.4008 };
 
+// Initialization function
 async function initialize() {
   initMap();
-
-  // Add an info window that pops up when user clicks on an individual
-  // location. Content of info window is entirely up to us.
-  infowindow = new google.maps.InfoWindow();
-
-  // Fetch and render repair stations as circles on map
-  fetchAndRenderRepairStations(MADISON);
-
-  // Initialize the Places Autocomplete Widget
-  initAutocompleteWidget();
-
-  // Initialize the Maps Geolocation Widget
+  initAutocompleteWidget();   
   initGeolocationWidget();
+  await fetchAndRenderRepairStations(MADISON);
+  setupEventListeners();
 }
 
-const initMap = () => {
-  distanceMatrixService = new google.maps.DistanceMatrixService();
+function setupEventListeners() {
+  const destinationSelect = document.getElementById('destination-select');
+  if (destinationSelect) {
+    destinationSelect.addEventListener('change', function() {
+      const selectedStationIndex = this.value;
+      if (selectedStationIndex && userCurrentLocation) {
+        const station = repairStations[selectedStationIndex];
+        calculateRouteToStation(userCurrentLocation, station);
+      } else {
+        window.alert("Please select a repair station and ensure your location is known.");
+      }
+    });
+  }
+}
 
-  // The map, centered on Madison, WI
-  map = new google.maps.Map(document.querySelector("#map"), {
-    center: MADISON,
-    zoom: 14,
-    // mapId: 'YOUR_MAP_ID_HERE', // used for optional Maps styling
-    clickableIcons: false,
-    fullscreenControl: false,
-    mapTypeControl: false,
-    rotateControl: true,
-    scaleControl: false,
-    streetViewControl: true,
-    zoomControl: true,
+// Initialize the application after DOM is loaded
+document.addEventListener('DOMContentLoaded', initialize);
+
+// Initialize the map
+function initMap() {
+  map = new google.maps.Map(document.getElementById("map"), {
+      center: MADISON,
+      zoom: 14,
+      clickableIcons: false,
+      fullscreenControl: false,
+      mapTypeControl: false,
+      rotateControl: true,
+      scaleControl: false,
+      streetViewControl: true,
+      zoomControl: true,
+  });
+
+  infowindow = new google.maps.InfoWindow();
+  originMarker = new google.maps.Marker({ map: map, visible: false });
+  directionsService = new google.maps.DirectionsService();
+  directionsRenderer = new google.maps.DirectionsRenderer();
+  directionsRenderer.setMap(map);
+  distanceMatrixService = new google.maps.DistanceMatrixService();
+}
+
+// Function to fetch and render repair stations
+async function fetchAndRenderRepairStations(center) {
+  // Fetch the repair stations from the data source
+  repairStations = (await fetchRepairStations(center)).features;
+  
+  // Clear existing circles
+  circles.forEach(circle => circle.setMap(null));
+  circles = [];
+
+  // Create circular markers based on the repair stations
+  repairStations.forEach(station => {
+    const circle = stationToCircle(station, map, infowindow);
+    if (circle instanceof google.maps.Circle) { // Ensure it's a valid Circle object
+      circles.push(circle);
+    } else {
+      console.error('Invalid circle object created:', circle);
+    }
   });
 };
 
-const fetchAndRenderRepairStations = async (center) => {
-  // Fetch the repair stations from the data source
-  repairStations = (await fetchRepairStations(center)).features;
-
-  // Create circular markers based on the repair stations
-  circles = repairStations.map((station) => stationToCircle(station, map, infowindow));
-};
-
-const fetchRepairStations = async (center) => {
+// Function to fetch repair stations
+async function fetchRepairStations (center) {
   const url = `/data/dropoffs?centerLat=${center.lat}&centerLng=${center.lng}`;
   const response = await fetch(url);
   return response.json();
 };
 
-const stationToCircle = (station, map, infowindow) => {
+// Function to create a circle for each station
+function stationToCircle (station, map, infowindow) {
   const coordinates = station.geometry.coordinates;
   const lat = coordinates[1];
   const lng = coordinates[0];
-
+  
   const circle = new google.maps.Circle({
     radius: 50,
     strokeColor: "#88429d",
@@ -73,6 +96,7 @@ const stationToCircle = (station, map, infowindow) => {
     center: { lat, lng },
     map,
   });
+
   circle.addListener("click", () => {
     // Create the content string for the infowindow
     const contentString = `
@@ -82,19 +106,17 @@ const stationToCircle = (station, map, infowindow) => {
         <p><a href="${station.properties.File_Path}" target="_blank">View Image</a></p>
       </div>
     `;
-
     infowindow.setContent(contentString);
     infowindow.setPosition({ lat, lng });
     infowindow.setOptions({ pixelOffset: new google.maps.Size(0, -10) });
     infowindow.open(map);
   });
-
   return circle;
 };
 
-const initAutocompleteWidget = () => {
-  // Add search bar for auto-complete
-  // Build and add the search bar
+// Function to initialize autocomplete widget
+function initAutocompleteWidget() {
+  // Build and add the autocomplete search bar
   const placesAutoCompleteCardElement = document.getElementById("pac-card");
   const placesAutoCompleteInputElement = placesAutoCompleteCardElement.querySelector(
     "input"
@@ -126,6 +148,7 @@ const initAutocompleteWidget = () => {
   let originLocation = map.getCenter();
   
   autocomplete.addListener("place_changed", async () => {
+    console.log(circles)
     circles.forEach((c) => c.setMap(null)); // clear existing repair staions
     originMarker.setVisible(false);
     originLocation = map.getCenter();
@@ -137,11 +160,14 @@ const initAutocompleteWidget = () => {
       window.alert("No address available for input: '" + place.name + "'");
       return;
     }
-    // Recenter the map to the selected address
-    originLocation = place.geometry.location;
-    map.setCenter(originLocation);
+
+    // Update userCurrentLocation with the selected address
+    userCurrentLocation = place.geometry.location.toJSON(); // Convert to a plain object
+
+    // Recenter the map to the origin marker
+    map.setCenter(userCurrentLocation);
     map.setZoom(15);
-    originMarker.setPosition(originLocation);
+    originMarker.setPosition(userCurrentLocation);
     originMarker.setVisible(true);
 
     await fetchAndRenderRepairStations(originLocation.toJSON());
@@ -153,10 +179,10 @@ const initAutocompleteWidget = () => {
   });
 };
 
+//Function to handle distance calculations
 async function calculateDistances(origin, repairStations) {
-  
   // Reduce number of repairStations from entire list to rough calculation of 25 closest
-    for (let i = 0; i < repairStations.length; i++){
+  for (let i = 0; i < repairStations.length; i++){
     let a = origin.toJSON().lat - repairStations[i].geometry.coordinates[1];
     let b = origin.toJSON().lng - repairStations[i].geometry.coordinates[0];
     let c = Math.sqrt(a**2 + b**2)
@@ -191,7 +217,8 @@ async function calculateDistances(origin, repairStations) {
   });
 }
 
-const getDistanceMatrix = (request) => {
+// Promise wrapper for distance matrix service
+function getDistanceMatrix (request) {
   return new Promise((resolve, reject) => {
     const callback = (response, status) => {
       if (status === google.maps.DistanceMatrixStatus.OK) {
@@ -204,6 +231,7 @@ const getDistanceMatrix = (request) => {
   });
 };
 
+//Function to render repair stations panel
 function renderRepairStationsPanel() {
   const panel = document.getElementById("panel");
   
@@ -228,7 +256,8 @@ function renderRepairStationsPanel() {
   return;
 }
 
-const panelTitle = () => {
+//Function to create title for the panel
+function panelTitle() {
   const rowElement = document.createElement("div");
   const nameElement = document.createElement("p");
   nameElement.classList.add("panel-title");
@@ -238,22 +267,35 @@ const panelTitle = () => {
   return rowElement;
 };
 
-const stationToPanelRow = (station) => {
+function stationToPanelRow(station, index) {
   // Add station details with text formatting
   const rowElement = document.createElement("div");
+  rowElement.classList.add("station-row");
+  rowElement.setAttribute("data-station-index", index);
+
   const nameElement = document.createElement("p");
   nameElement.classList.add("place");
   nameElement.textContent = station.properties.Description;
   rowElement.appendChild(nameElement);
+
   const distanceTextElement = document.createElement("p");
   distanceTextElement.classList.add("distanceText");
   distanceTextElement.textContent = station.properties.distanceText;
   rowElement.appendChild(distanceTextElement);
+
+  // Add click event listener to each row
+  rowElement.addEventListener('click', () => {
+    if (userCurrentLocation) {
+      calculateRouteToStation(userCurrentLocation, station);
+    } else {
+      alert('Please set your current location first.');
+    }
+  });
   return rowElement;
 };
 
-const initGeolocationWidget = () => {
-
+//Function to initialize geolocation widget
+function initGeolocationWidget() {
   const locationButton = document.createElement("button");
 
   //const locationButton = document.getElementById("pac-card");
@@ -268,7 +310,8 @@ const initGeolocationWidget = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const pos = {
+          //store the user's current position
+          const userCurrentLocation = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           };
@@ -309,5 +352,36 @@ const initGeolocationWidget = () => {
       );
     }
   });
-
 };
+
+// Function to calculate the route to the selected station
+function calculateRouteToStation(origin, station) {
+  const destination = {
+    lat: station.geometry.coordinates[1],
+    lng: station.geometry.coordinates[0]
+  };
+
+  directionsService.route({
+    origin: origin,
+    destination: destination,
+    travelMode: google.maps.TravelMode.DRIVING // You can change this to BICYCLING or WALKING if appropriate
+  }, function(response, status) {
+    if (status === 'OK') {
+      directionsRenderer.setDirections(response);
+    } else {
+      console.error('Directions request failed due to ' + status);
+      window.alert('Directions request failed due to ' + status);
+    }
+  });
+}
+
+// Event listener for station selection
+document.getElementById('destination-select').addEventListener('change', function() {
+  const selectedStationIndex = this.value;
+  if (selectedStationIndex && userCurrentLocation) {
+    const station = repairStations[selectedStationIndex];
+    calculateRouteToStation(userCurrentLocation, station);
+  } else {
+    window.alert("Please select a repair station and ensure your location is known.");
+  }
+});
