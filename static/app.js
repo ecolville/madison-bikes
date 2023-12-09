@@ -48,6 +48,14 @@ function setupEventListeners() {
   }
 }
 
+const pacCard = document.getElementById("pac-card");
+const panel = document.getElementById("panel");
+if (pacCard && panel) {
+    const pacCardHeight = pacCard.offsetHeight;
+    panel.style.top = `${pacCardHeight + 20}px`; // 20px for some margin
+    panel.style.display = "block";
+}
+
 // Initialize the application after DOM is loaded
 document.addEventListener('DOMContentLoaded', initialize);
 
@@ -174,6 +182,7 @@ function initAutocompleteWidget() {
     originMarker.setVisible(false);
     originLocation = map.getCenter();
     const place = autocomplete.getPlace();
+    document.getElementById("panel").style.display = "block";
 
     if (!place.geometry) {
       // User entered the name of a Place that was not suggested and
@@ -340,6 +349,8 @@ function initGeolocationWidget() {
           console.log("Location found");
           //infoWindow.setContent("Location found.");        
         
+          // Make the panel visible
+          document.getElementById("panel").style.display = "block";
         },
         async() => {
           //put the pos value in the address bar

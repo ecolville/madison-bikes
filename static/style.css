@@ -1,5 +1,4 @@
-html,
-body {
+html, body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -7,48 +6,62 @@ body {
 
 body {
   display: flex;
+  flex-direction: column;
 }
 
 #map {
   height: 100%;
-  flex-grow: 4;
-  flex-basis: auto;
+  flex-grow: 1;
+}
+
+#pac-card {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  max-width: 350px;
 }
 
 #panel {
-  max-width: 350px;
-  height: auto;
-  flex-grow: 1;
+  display: none; /* Initially hidden */
+  position: absolute;
+  top: 400px; /* Adjust based on pac-card height */
+  left: 10px;
+  z-index: 5;
+  background-color: #fff;
   padding: 10px;
-  overflow: auto;
-  transition: all 0.2s ease-out;
-  box-shadow: 0 2px 6px rgba(0,0,0, 0.3);
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  max-width: 350px;
+  max-height: calc(100vh - 150px); /* Adjusted maximum height */
+  overflow-y: auto; /* Enables vertical scrolling */
 }
 
 #panel.open {
-  flex-basis: auto;
+  display: block;
 }
 
-#panel .place, #panel .distanceText {
+#panel .place {
   font-family: "open sans", arial, sans-serif;
-  font-size: 1em;
+  font-size: 0.9em; 
+  font-weight: bold; 
   margin: 5px 0;
-  font-weight: 500;
-  margin-block-end: 0px;
   padding-left: 18px;
   padding-right: 18px;
 }
 
-/* Styling for Autocomplete search bar */
-#pac-card {
-  background-color: #fff;
-  border-radius: 2px 0 0 2px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  box-sizing: border-box;
-  font-family: Roboto;
-  margin: 10px 10px 0 0;
-  -moz-box-sizing: border-box;
-  outline: none;
+#panel .distanceText {
+  font-family: "open sans", arial, sans-serif;
+  font-size: 0.9em; 
+  font-weight: 400; 
+  color: silver; 
+  margin: 5px 0;
+  padding-left: 18px;
+  padding-right: 18px;
 }
 
 #pac-container {
@@ -62,11 +75,11 @@ body {
   font-family: Roboto;
   font-size: 15px;
   font-weight: 300;
-  margin-left: 12px;
-  padding: 0 11px 0 13px;
+  width: calc(100% - 22px);
+  margin: 0;
+  padding: 0 11px;
   text-overflow: ellipsis;
-  width: 400px;
-}
+  border: 1px solid #ccc;}
 
 #pac-input:focus {
   border-color: #4d90fe;
@@ -96,6 +109,16 @@ body {
   margin: 0 !important;
 }
 
+.station-row {
+  border-bottom: 1px solid #e0e0e0; /* Light grey border */
+  padding: 10px;
+  margin-bottom: 5px; /* Space between rows */
+}
+
+.station-row:last-child {
+  border-bottom: none; /* Remove border for the last row */
+}
+
 .station-row:hover {
   cursor: pointer;
   background-color: #f0f0f0; /* light grey background on hover for indication */
@@ -114,4 +137,18 @@ body {
 
 .custom-map-control-button:hover {
   background-color: #357ae8; /* Darker blue on hover */
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 600px) {
+  #pac-card, #panel {
+    max-width: 95%;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  #panel {
+    top: initial; /* Resets top positioning for mobile */
+    max-height: 50vh; /* Adjust for smaller screens */
+  }
 }
