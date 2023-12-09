@@ -90,3 +90,15 @@ body {
 .hidden {
   display: none;
 }
+
+.panel-title {
+  font-family: "open sans", arial, sans-serif;
+  font-size: 1.2em !important;
+  font-weight: 500 !important;
+  color: #fff;
+  background-color: #acbcc9;
+  font-size: 18px;
+  font-weight: 400;
+  padding: 6px 12px;
+  margin: 0 !important;
+}

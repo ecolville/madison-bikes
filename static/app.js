@@ -23,6 +23,9 @@ async function initialize() {
 
   // Initialize the Places Autocomplete Widget
   initAutocompleteWidget();
+
+  // Initialize the Maps Geolocation Widget
+  initGeolocationWidget();
 }
 
 const initMap = () => {
@@ -121,6 +124,7 @@ const initAutocompleteWidget = () => {
   originMarker = new google.maps.Marker({ map: map });
   originMarker.setVisible(false);
   let originLocation = map.getCenter();
+  
   autocomplete.addListener("place_changed", async () => {
     circles.forEach((c) => c.setMap(null)); // clear existing repair staions
     originMarker.setVisible(false);
@@ -202,7 +206,7 @@ const getDistanceMatrix = (request) => {
 
 function renderRepairStationsPanel() {
   const panel = document.getElementById("panel");
-
+  
   if (slicedRepairStations.length == 0) {
     panel.classList.remove("open");
     return;
@@ -212,6 +216,7 @@ function renderRepairStationsPanel() {
   while (panel.lastChild) {
     panel.removeChild(panel.lastChild);
   }
+  panel.appendChild(panelTitle());
   slicedRepairStations
     .sort((a, b) => a.properties.distanceValue - b.properties.distanceValue)
     .forEach((station) => {
@@ -219,9 +224,19 @@ function renderRepairStationsPanel() {
     });
   // Open the panel
   panel.classList.add("open");
-  panel.insertAdjacentHTML("beforebegin",'<div id="pac-title">Locations sorted by distance</div>');
+
   return;
 }
+
+const panelTitle = () => {
+  const rowElement = document.createElement("div");
+  const nameElement = document.createElement("p");
+  nameElement.classList.add("panel-title");
+  nameElement.textContent = "Bicycle Repair Stations by distance to address";
+  rowElement.appendChild(nameElement)
+  console.log("panel title?");
+  return rowElement;
+};
 
 const stationToPanelRow = (station) => {
   // Add station details with text formatting
@@ -235,4 +250,64 @@ const stationToPanelRow = (station) => {
   distanceTextElement.textContent = station.properties.distanceText;
   rowElement.appendChild(distanceTextElement);
   return rowElement;
+};
+
+const initGeolocationWidget = () => {
+
+  const locationButton = document.createElement("button");
+
+  //const locationButton = document.getElementById("pac-card");
+
+  locationButton.textContent = "Use current location?";
+  locationButton.classList.add("custom-map-control-button");
+  document.getElementById("pac-card").appendChild(locationButton);
+  
+  // Respond when a user selects the geolocation button
+  locationButton.addEventListener("click", () => {
+    // Try HTML5 geolocation.
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const pos = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+        
+          console.log("Location found");
+          //infoWindow.setContent("Location found.");        
+        
+        },
+        async() => {
+          //put the pos value in the address bar
+          //need to convert lat lang to an address
+          
+          circles.forEach((c) => c.setMap(null)); // clear existing repair staions
+          originMarker.setVisible(false);
+          originLocation = map.getCenter();
+          const place = autocomplete.getPlace();
+          // Recenter the map to the selected address
+          originLocation = place.geometry.location;
+          map.setCenter(originLocation);
+          map.setZoom(15);
+          originMarker.setPosition(originLocation);
+          originMarker.setVisible(true);
+
+          await fetchAndRenderRepairStations(originLocation.toJSON());
+          
+          // Use the selected address as the origin to calculate distances
+          // to each of the store locations
+          await calculateDistances(originLocation, repairStations);
+          renderRepairStationsPanel()
+        },
+      );
+    } else {
+      // Browser doesn't support Geolocation
+      window.alert(
+        browserHasGeolocation
+        ? "Error: The Geolocation service failed."
+        : "Error: Your browser doesn't support geolocation.",
+      );
+    }
+  });
+
 };
