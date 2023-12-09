@@ -6,6 +6,24 @@ let circles = [], repairStations = [], distCalcs = [], stationDistCalcs = [], sl
 //The location of Madison, WI
 const MADISON = { lat: 43.0722, lng: -89.4008 };
 
+//set map styles
+const mapStyles = [
+  {
+    featureType: "poi", // Points of interest
+    stylers: [{ visibility: "off" }]
+  },
+  {
+    featureType: "transit", // Transit stations
+    stylers: [{ visibility: "off" }]
+  },
+  {
+    featureType: "road", // Roads
+    elementType: "labels", // Only the labels on roads
+    stylers: [{ visibility: "off" }]
+  },
+  // Add more rules as needed
+];
+
 // Initialization function
 async function initialize() {
   initMap();
@@ -38,6 +56,7 @@ function initMap() {
   map = new google.maps.Map(document.getElementById("map"), {
       center: MADISON,
       zoom: 14,
+      styles: mapStyles,
       clickableIcons: false,
       fullscreenControl: false,
       mapTypeControl: false,
@@ -89,10 +108,12 @@ function stationToCircle (station, map, infowindow) {
   const lng = coordinates[0];
   
   const circle = new google.maps.Circle({
-    radius: 50,
-    strokeColor: "#88429d",
+    radius: 30,
+    strokeColor: "#8e44ad",
     strokeOpacity: 0.8,
-    strokeWeight: 5,
+    strokeWeight: 2,
+    fillColor:"#8e44ad",
+    fillOpacity: 0.35,
     center: { lat, lng },
     map,
   });
@@ -208,7 +229,7 @@ async function calculateDistances(origin, repairStations) {
       const [lng, lat] = station.geometry.coordinates;
       return { lat, lng };
     }),
-    travelMode: google.maps.TravelMode.DRIVING,
+    travelMode: google.maps.TravelMode.BICYCLING,
     unitSystem: google.maps.UnitSystem.METRIC,
   });
   response.rows[0].elements.forEach((element, index) => {
@@ -296,11 +317,11 @@ function stationToPanelRow(station, index) {
 
 //Function to initialize geolocation widget
 function initGeolocationWidget() {
-  const locationButton = document.createElement("button");
-
-  //const locationButton = document.getElementById("pac-card");
-
-  locationButton.textContent = "Use current location?";
+  let locationButton = document.getElementById("location-button");
+  if (!locationButton) {
+    locationButton = document.createElement("button");
+    locationButton.id = "location-button";
+    locationButton.textContent = "Use current location?";
   locationButton.classList.add("custom-map-control-button");
   document.getElementById("pac-card").appendChild(locationButton);
   
@@ -352,6 +373,7 @@ function initGeolocationWidget() {
       );
     }
   });
+}
 };
 
 // Function to calculate the route to the selected station
@@ -364,7 +386,7 @@ function calculateRouteToStation(origin, station) {
   directionsService.route({
     origin: origin,
     destination: destination,
-    travelMode: google.maps.TravelMode.DRIVING // You can change this to BICYCLING or WALKING if appropriate
+    travelMode: google.maps.TravelMode.BICYCLING 
   }, function(response, status) {
     if (status === 'OK') {
       directionsRenderer.setDirections(response);
