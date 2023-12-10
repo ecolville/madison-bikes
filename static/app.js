@@ -177,7 +177,6 @@ function initAutocompleteWidget() {
   let originLocation = map.getCenter();
   
   autocomplete.addListener("place_changed", async () => {
-    console.log(circles)
     circles.forEach((c) => c.setMap(null)); // clear existing repair staions
     originMarker.setVisible(false);
     originLocation = map.getCenter();
@@ -204,7 +203,7 @@ function initAutocompleteWidget() {
     
     // Use the selected address as the origin to calculate distances
     // to each of the store locations
-    await calculateDistances(originLocation, repairStations);
+    await calculateDistances(originLocation, repairStations); //calculateDistance told to use origin, not user location. Need to update likely in many places, but fixable
     renderRepairStationsPanel()
   });
 };
@@ -215,19 +214,20 @@ async function calculateDistances(origin, repairStations) {
   for (let i = 0; i < repairStations.length; i++){
     let a = origin.toJSON().lat - repairStations[i].geometry.coordinates[1];
     let b = origin.toJSON().lng - repairStations[i].geometry.coordinates[0];
-    let c = Math.sqrt(a**2 + b**2)
+    let c = Math.sqrt(a**2 + b**2) // Pythagorian calculation, this does not incorporate street information
     let distCalc = c;
-    distCalcs.push(distCalc);
+    distCalcs.push(distCalc); // Creates an array of the distance calculations
 
+    // Store each distance calculation in an object to associate station with it's distance calc to the origin
     let obj = {};
     obj = {'station': repairStations[i], 'distanceCalc': distCalc};
-    stationDistCalcs.push(obj);
+    stationDistCalcs.push(obj); // Add each object with the station and associated distance calc to an array
   }
   
   stationDistCalcs.sort((a,b) => a.distanceCalc - b.distanceCalc); // sorts by lowest to greatest distanceCalc
   const slicedStationDistCalcs = stationDistCalcs.slice(0, 25); // creates a new array of the lowest 25 
 
-  // builds a new array of just the repairStations from the lowest 25
+  // builds a new array of just the repairStations (station object only) from the array of station & distance calc objects using the lowest 25 distance calcs
   slicedStationDistCalcs.forEach((element) => { slicedRepairStations.push(element.station) });
 
   // Retrieve the distances of each store from the origin
@@ -286,14 +286,13 @@ function renderRepairStationsPanel() {
   return;
 }
 
-//Function to create title for the panel
+//Function to create title for the repair stations panel
 function panelTitle() {
   const rowElement = document.createElement("div");
   const nameElement = document.createElement("p");
   nameElement.classList.add("panel-title");
   nameElement.textContent = "Bicycle Repair Stations by distance to address";
   rowElement.appendChild(nameElement)
-  console.log("panel title?");
   return rowElement;
 };
 
