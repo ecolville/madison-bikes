@@ -1,7 +1,7 @@
 //Global variables
 let map, infowindow, originMarker, userCurrentLocation;
 let distanceMatrixService, directionsService, directionsRenderer;
-let circles = [], repairStations = [], distCalcs = [], stationDistCalcs = [], slicedRepairStations = [];
+let markers = [], repairStations = [], distCalcs = [], stationDistCalcs = [], slicedRepairStations = [];
 
 //The location of Madison, WI
 const MADISON = { lat: 43.0722, lng: -89.4008 };
@@ -87,17 +87,17 @@ async function fetchAndRenderRepairStations(center) {
   // Fetch the repair stations from the data source
   repairStations = (await fetchRepairStations(center)).features;
   
-  // Clear existing circles
-  circles.forEach(circle => circle.setMap(null));
-  circles = [];
+  // Clear existing markers
+  markers.forEach(marker => marker.setMap(null));
+  markers = [];
 
-  // Create circular markers based on the repair stations
+  // Create markers based on the repair stations
   repairStations.forEach(station => {
-    const circle = stationToCircle(station, map, infowindow);
-    if (circle instanceof google.maps.Circle) { // Ensure it's a valid Circle object
-      circles.push(circle);
+    const marker = stationToMarker(station, map, infowindow);
+    if (marker instanceof google.maps.Marker) { // Ensure it's a valid object
+      markers.push(marker);
     } else {
-      console.error('Invalid circle object created:', circle);
+      console.error('Invalid marker object created:', marker);
     }
   });
 };
@@ -109,24 +109,58 @@ async function fetchRepairStations (center) {
   return response.json();
 };
 
-// Function to create a circle for each station
-function stationToCircle (station, map, infowindow) {
+// Function to create a marker for each station
+function stationToMarker(station, map, infowindow) {
   const coordinates = station.geometry.coordinates;
   const lat = coordinates[1];
   const lng = coordinates[0];
-  
-  const circle = new google.maps.Circle({
-    radius: 30,
-    strokeColor: "#8e44ad",
-    strokeOpacity: 0.8,
-    strokeWeight: 2,
-    fillColor:"#8e44ad",
-    fillOpacity: 0.35,
-    center: { lat, lng },
-    map,
+
+  const defaultIcon = {
+    url: "bike_icon.png",
+    scaledSize: new google.maps.Size(25, 25), 
+    origin: new google.maps.Point(0, 0),
+    anchor: new google.maps.Point(15, 15)
+  };
+
+  const enlargedIcon = {
+    url: "bike_icon.png",
+    scaledSize: new google.maps.Size(35, 35), // Larger size
+    origin: new google.maps.Point(0, 0),
+    anchor: new google.maps.Point(15, 15)
+  };
+
+  const marker = new google.maps.Marker({
+    position: { lat, lng },
+    map: map,
+    icon: defaultIcon
   });
 
-  circle.addListener("click", () => {
+  // Mouseover event listener to enlarge the icon
+  marker.addListener("mouseover", () => {
+    marker.setIcon(enlargedIcon);
+  });
+
+  // Store the station's unique identifier in the marker
+  marker.stationId = station.properties.OBJECTID;
+
+  // Mouseover event listener to highlight corresponding row in the panel
+  marker.addListener("mouseover", () => {
+    marker.setIcon(enlargedIcon);
+    highlightPanelRow(marker.stationId, true); // Highlight the row
+  });
+
+  // Mouseout event listener to unhighlight corresponding row in the panel
+  marker.addListener("mouseout", () => {
+    marker.setIcon(defaultIcon);
+    highlightPanelRow(marker.stationId, false); // Unhighlight the row
+    });
+
+  // Mouseout event listener to revert the icon size
+  marker.addListener("mouseout", () => {
+    marker.setIcon(defaultIcon);
+  });
+
+  marker.addListener("click", () => {
     // Create the content string for the infowindow
     const contentString = `
       <div>
@@ -140,8 +174,22 @@ function stationToCircle (station, map, infowindow) {
     infowindow.setOptions({ pixelOffset: new google.maps.Size(0, -10) });
     infowindow.open(map);
   });
-  return circle;
+  return marker;
 };
+
+function highlightPanelRow(stationId, highlight) {
+  console.log("Highlighting Station ID:", stationId, "Highlight:", highlight);
+  const panelRows = document.querySelectorAll('.station-row');
+  panelRows.forEach(row => {
+    if (row.dataset.stationId == stationId) { // Ensure to use == for comparison
+      if (highlight) {
+        row.style.backgroundColor = 'grey'; // Set the background color for highlighting
+      } else {
+        row.style.backgroundColor = ''; // Reset the background color
+      }
+    }
+  });
+}
 
 // Function to initialize autocomplete widget
 function initAutocompleteWidget() {
@@ -177,7 +225,7 @@ function initAutocompleteWidget() {
   let originLocation = map.getCenter();
   
   autocomplete.addListener("place_changed", async () => {
-    circles.forEach((c) => c.setMap(null)); // clear existing repair staions
+    markers.forEach((c) => c.setMap(null)); // clear existing repair staions
     originMarker.setVisible(false);
     originLocation = map.getCenter();
     const place = autocomplete.getPlace();
@@ -301,6 +349,7 @@ function stationToPanelRow(station, index) {
   const rowElement = document.createElement("div");
   rowElement.classList.add("station-row");
   rowElement.setAttribute("data-station-index", index);
+  rowElement.dataset.stationId = station.properties.OBJECTID;
 
   const nameElement = document.createElement("p");
   nameElement.classList.add("place");
@@ -355,7 +404,7 @@ function initGeolocationWidget() {
           //put the pos value in the address bar
           //need to convert lat lang to an address
           
-          circles.forEach((c) => c.setMap(null)); // clear existing repair staions
+          markers.forEach((c) => c.setMap(null)); // clear existing repair staions
           originMarker.setVisible(false);
           originLocation = map.getCenter();
           const place = autocomplete.getPlace();
