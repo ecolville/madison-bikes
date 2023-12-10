@@ -14,6 +14,14 @@ body {
   flex-basis: auto; /*sets the initial size of the flex item*/
 }
 
+#panel {
+  height: 100%;
+  flex-basis: 0;
+  flex-grow: 0;
+  overflow: auto;
+  transition: all 0.2s ease-out;
+}
+
 #pac-card {
   /*
   position: absolute;
