@@ -6,43 +6,30 @@ html, body {
 
 body {
   display: flex;
-flex-direction: column;
 }
 
 #map {
   height: 100%;
-  flex-grow: 1;
+  flex-grow: 4;
+  flex-basis: auto; /*sets the initial size of the flex item*/
 }
 
 #pac-card {
+  /*
   position: absolute;
   top: 10px;
   left: 10px;
-  z-index: 5;
-  background-color: #fff;
-padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-max-width: 350px;
-}
-
-#panel {
-  display: none; /* Initially hidden */
-  position: absolute;
-  top: 400px; /* Adjust based on pac-card height */
-  left: 10px;
-  z-index: 5;
-  background-color: #fff;
   padding: 10px;
+  */
+  z-index: 10;
+  background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   max-width: 350px;
-  max-height: calc(100vh - 150px); /* Adjusted maximum height */
-  overflow-y: auto; /* Enables vertical scrolling */
 }
 
 #panel.open {
-  display: block;
+  flex-basis: auto;
 }
 
 #panel .place {
@@ -67,7 +54,7 @@ max-width: 350px;
 #pac-container {
   padding-top: 12px;
   padding-bottom: 12px;
-  margin-right: 12px;
+  margin-left: 12px;
 }
 
 #pac-input {
