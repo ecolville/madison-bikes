@@ -6,7 +6,7 @@ html, body {
 
 body {
   display: flex;
-  flex-direction: column;
+flex-direction: column;
 }
 
 #map {
@@ -20,10 +20,10 @@ body {
   left: 10px;
   z-index: 5;
   background-color: #fff;
-  padding: 10px;
+padding: 10px;
   border-radius: 5px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  max-width: 350px;
+max-width: 350px;
 }
 
 #panel {
@@ -149,6 +149,20 @@ body {
 
   #panel {
     top: initial; /* Resets top positioning for mobile */
+    max-height: 50vh; /* Adjust for smaller screens */
+  }
+}/* Mobile Responsiveness */
+@media screen and (max-width: 600px) {
+  #side-container {
+    width: 100%;
+    max-width: none;
+  }
+
+  #map, #side-container {
+    order: 1;
+  }
+
+  #panel {
     max-height: 50vh; /* Adjust for smaller screens */
   }
 }
