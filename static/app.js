@@ -83,9 +83,9 @@ function initMap() {
 }
 
 // Function to fetch and render repair stations
-async function fetchAndRenderRepairStations(center) {
+async function fetchAndRenderRepairStations(location) {
   // Fetch the repair stations from the data source
-  repairStations = (await fetchRepairStations(center)).features;
+  repairStations = (await fetchRepairStations(location)).features;
   
   // Clear existing markers
   markers.forEach(marker => marker.setMap(null));
@@ -227,7 +227,7 @@ function initAutocompleteWidget() {
   autocomplete.addListener("place_changed", async () => {
     markers.forEach((c) => c.setMap(null)); // clear existing repair staions
     originMarker.setVisible(false);
-    originLocation = map.getCenter();
+    
     const place = autocomplete.getPlace();
     document.getElementById("panel").style.display = "block";
 
@@ -247,29 +247,30 @@ function initAutocompleteWidget() {
     originMarker.setPosition(userCurrentLocation);
     originMarker.setVisible(true);
 
-    await fetchAndRenderRepairStations(originLocation.toJSON());
+    await fetchAndRenderRepairStations(userCurrentLocation);
     
-    // Use the selected address as the origin to calculate distances
-    // to each of the store locations
-    await calculateDistances(originLocation, repairStations); //calculateDistance told to use origin, not user location. Need to update likely in many places, but fixable
-    renderRepairStationsPanel()
+    // Recalculate distances with the new origin
+    await calculateDistances(userCurrentLocation, repairStations);
+    renderRepairStationsPanel();
   });
-};
+}
 
 //Function to handle distance calculations
 async function calculateDistances(origin, repairStations) {
-  // Reduce number of repairStations from entire list to rough calculation of 25 closest
-  for (let i = 0; i < repairStations.length; i++){
-    let a = origin.toJSON().lat - repairStations[i].geometry.coordinates[1];
-    let b = origin.toJSON().lng - repairStations[i].geometry.coordinates[0];
-    let c = Math.sqrt(a**2 + b**2) // Pythagorian calculation, this does not incorporate street information
-    let distCalc = c;
-    distCalcs.push(distCalc); // Creates an array of the distance calculations
 
-    // Store each distance calculation in an object to associate station with it's distance calc to the origin
-    let obj = {};
-    obj = {'station': repairStations[i], 'distanceCalc': distCalc};
-    stationDistCalcs.push(obj); // Add each object with the station and associated distance calc to an array
+   // Check if origin is a LatLng object and convert to a plain object if necessary
+   const originCoords = origin instanceof google.maps.LatLng ? origin.toJSON() : origin;
+
+  // Reduce number of repairStations from entire list to rough calculation of 25 closest
+  for (let i = 0; i < repairStations.length; i++) {
+    let a = originCoords.lat - repairStations[i].geometry.coordinates[1];
+    let b = originCoords.lng - repairStations[i].geometry.coordinates[0];
+    let c = Math.sqrt(a**2 + b**2); // Pythagorean calculation
+    let distCalc = c;
+    distCalcs.push(distCalc);
+
+    let obj = {'station': repairStations[i], 'distanceCalc': distCalc};
+    stationDistCalcs.push(obj);
   }
   
   stationDistCalcs.sort((a,b) => a.distanceCalc - b.distanceCalc); // sorts by lowest to greatest distanceCalc
@@ -287,7 +288,7 @@ async function calculateDistances(origin, repairStations) {
       return { lat, lng };
     }),
     travelMode: google.maps.TravelMode.BICYCLING,
-    unitSystem: google.maps.UnitSystem.METRIC,
+    unitSystem: google.maps.UnitSystem.IMPERIAL,
   });
   response.rows[0].elements.forEach((element, index) => {
     slicedRepairStations[index].properties.distanceText = element.distance.text;
