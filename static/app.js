@@ -349,11 +349,23 @@ function stationToPanelRow(station, index) {
   const nameElement = document.createElement("p");
   nameElement.classList.add("place"); 
   nameElement.textContent = station.properties.Description;
+  nameElement.style.fontWeight = 'bold';
+  nameElement.style.fontSize = '0.9em';
+  nameElement.style.wordWrap = 'break-word';
+  nameElement.style.margin = '5px 0';
+  nameElement.style.paddingLeft = '18px';
+  nameElement.style.paddingRight = '18px';
   rowElement.appendChild(nameElement);
 
   const distanceTextElement = document.createElement("p");
   distanceTextElement.classList.add("distanceText"); 
   distanceTextElement.textContent = station.properties.distanceText;
+  distanceTextElement.style.fontSize = '0.8em';
+  distanceTextElement.style.fontWeight = 'normal';
+  distanceTextElement.style.color = 'rgb(151, 151, 151)';
+  distanceTextElement.style.margin = '5px 0';
+  distanceTextElement.style.paddingLeft = '18px';
+  distanceTextElement.style.paddingRight = '18px';
   rowElement.appendChild(distanceTextElement);
 
   // Add click event listener to each row

@@ -2,8 +2,6 @@
   --primary-color: #7a43b6; 
   --secondary-color: #acbcc9; 
   --background-color: #fff; 
-  --text-color: #333; 
-  --title-color: #222;
 }
 
 html, body {
@@ -153,22 +151,35 @@ h2, .panel-title, #pac-title {
   padding: 6px 12px;
 }
 
+.panel-title {
+  background-color: var(--secondary-color); 
+  padding: 5px;
+  border-radius: 2px;
+  text-align: center;
+  margin-bottom: 10px;
+  font-family: 'Open Sans', sans-serif;
+  color: var(--title-color);
+  font-size: 18px;
+  font-weight: 400;
+}
+
 /* Style for the place name */
 .panel-row .place {
   font-family: 'Open Sans', arial, sans-serif;
-  font-size: 0.9em; /* Maintain current size */
-  font-weight: bold; /* Make text bold */
+  font-size: 0.9em; 
+  font-weight: bold; 
   margin: 5px 0;
   padding-left: 18px;
   padding-right: 18px;
+  word-break: break-word;
 }
 
 /* Style for the distance text */
 .panel-row .distanceText {
   font-family: 'Open Sans', arial, sans-serif;
-  font-size: 0.8em; /* Slightly smaller font size */
-  font-weight: normal; /* Normal weight for distance text */
-  color: rgb(151, 151, 151); /* Maintain current color */
+  font-size: 0.8em; 
+  font-weight: normal; 
+  color: rgb(151, 151, 151); 
   margin: 5px 0;
   padding-left: 18px;
   padding-right: 18px;
@@ -182,9 +193,9 @@ h2, .panel-title, #pac-title {
 
 /* Panel Row Styles */
 .station-row {
-  border-bottom: 1px solid #e0e0e0; /* Light grey border */
-  padding: 10px;
-  margin-bottom: 3px; /* Space between rows */
+  border-bottom: 1px solid #e0e0e0; 
+  padding: 2px;
+  margin-bottom: 2px; 
   background-color: #fff;
   cursor: pointer;
 
@@ -193,38 +204,13 @@ h2, .panel-title, #pac-title {
   }
 
   &:hover {
-    background-color: #dadada; /* light grey background on hover for indication */
+    background-color: #dadada; 
   }
-}
-
-#side-container {
-  display: grid;
-  height: 100vh;
-  grid-template-rows: auto auto; /*sets height of child items: pac-card and panel*/
-  background-image: linear-gradient(30deg, #fff, aliceblue);
-  overflow: hidden;
 }
 
 #panel {
   overflow: auto;
   transition: all 0.2s ease-out;
-}
-
-/* Panel Row Styles */
-.station-row {
-  border-bottom: 1px solid #e0e0e0; /* Light grey border */
-  padding: 10px;
-  margin-bottom: 3px; /* Space between rows */
-  background-color: #fff;
-  cursor: pointer;
-
-  &:last-child {
-    border-bottom: none; /* Remove border for the last row */
-  }
-
-  &:hover {
-    background-color: #dadada; /* light grey background on hover for indication */
-  }
 }
 
 /* Responsive Design */
