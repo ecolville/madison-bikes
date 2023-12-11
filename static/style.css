@@ -35,8 +35,13 @@ html, body {
   left: 0;
   right: 0;
   background-color: var(--secondary-color);
-  padding: 0px;
+  padding: 2px 5px;
   border-bottom: 2px solid #ccc;
+}
+
+#app-title h1 {
+  font-size: 1.5em; /* Smaller font size for the title, adjust as needed */
+  margin: 0; /* Remove any default margin */
 }
 
 /* Positioning of pac-card */
@@ -71,9 +76,9 @@ html, body {
 }
 
 .modal .modal-content h2 {
-  color: #5a2d8c; /* Sets the color to the primary purple color */
+  color: #5a2d8c; 
   font-weight: bold;
-  font-size: 24px; /* Sets a larger font size, adjust as needed */
+  font-size: 24px; 
 }
 
 .close {
@@ -140,14 +145,13 @@ html, body {
   right: 0px;
 }
 
-
 /* Styling for buttons */
 .custom-map-control-button, #about-button {
   background-color: var(--primary-color);
   color: var(--background-color);
   border: none;
   border-radius: 4px;
-  padding: 10px 15px;
+  padding: 5px 10px;
   margin: 10px;
   font-size: 14px;
   cursor: pointer;
@@ -158,7 +162,8 @@ html, body {
 }
 
 #about-button h2 {
-  color: #fff !important; /* Explicitly setting the text color of h2 to white */
+  color: #fff !important;
+  margin: 0; 
 }
   
 /* Typography */
