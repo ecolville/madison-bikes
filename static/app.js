@@ -28,7 +28,7 @@ async function initialize() {
   initMap();
   initAutocompleteWidget();   
   initGeolocationWidget();
-  await fetchAndRenderRepairStations(MADISON);
+  fetchAndRenderRepairStations(MADISON);
   setupEventListeners();
 }
 
@@ -45,6 +45,14 @@ function setupEventListeners() {
       }
     });
   }
+}
+
+const pacCard = document.getElementById("pac-card");
+const panel = document.getElementById("panel");
+if (pacCard && panel) {
+    const pacCardHeight = pacCard.offsetHeight;
+    panel.style.top = `${pacCardHeight + 70}px`; // 20px for some margin
+    panel.style.display = "block";
 }
 
 // Initialize the application after DOM is loaded
@@ -197,9 +205,7 @@ function initAutocompleteWidget() {
     componentRestrictions: { country: "us" },
     map,
   };
-  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(
-    placesAutoCompleteCardElement
-  );
+
   // Make the search bar into a Places Autocomplete search bar and select
   // which detail fields should be returned about the place that
   // the user selects from the suggestions.
@@ -450,14 +456,3 @@ function calculateRouteToStation(origin, station) {
     }
   });
 }
-
-// Event listener for station selection
-document.getElementById('destination-select').addEventListener('change', function() {
-  const selectedStationIndex = this.value;
-  if (selectedStationIndex && userCurrentLocation) {
-    const station = repairStations[selectedStationIndex];
-    calculateRouteToStation(userCurrentLocation, station);
-  } else {
-    window.alert("Please select a repair station and ensure your location is known.");
-  }
-});
