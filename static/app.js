@@ -19,7 +19,7 @@ const mapStyles = [
   {
     featureType: "road", // Roads
     elementType: "labels", // Only the labels on roads
-    stylers: [{ visibility: "off" }]
+    stylers: [{ visibility: "on" }]
   },
   // Add more rules as needed
 ];
@@ -47,16 +47,6 @@ function setupEventListeners() {
     });
   }
 }
-
-/*
-const pacCard = document.getElementById("pac-card");
-const panel = document.getElementById("panel");
-if (pacCard && panel) {
-    const pacCardHeight = pacCard.offsetHeight;
-    panel.style.top = `${pacCardHeight + 70}px`; // 20px for some margin
-    panel.style.display = "block";
-}
-*/
 
 // Initialize the application after DOM is loaded
 document.addEventListener('DOMContentLoaded', initialize);
