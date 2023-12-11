@@ -21,7 +21,6 @@ const mapStyles = [
     elementType: "labels", // Only the labels on roads
     stylers: [{ visibility: "on" }]
   },
-  // Add more rules as needed
 ];
 
 // Initialization function
