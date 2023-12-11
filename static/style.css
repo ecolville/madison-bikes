@@ -17,6 +17,98 @@ html, body {
 
 #app-title, #pac-card {
   background-color: var(--secondary-color);
+  padding: 5px;
+  border-radius: 2px;
+  border: 2px solid #ccc;
+  display: block;
+  position: absolute;
+  z-index: 100;
+}
+
+#app-title {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center;
+  position: fixed;
+  z-index: 100;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--secondary-color);
+  padding: 0px;
+  border-bottom: 2px solid #ccc;
+}
+
+/* Positioning of pac-card */
+#pac-card {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  max-width: 350px;
+  min-width: 280px;
+  top: 110px;
+  right: 0px;
+}
+
+/* About Button */
+.modal {
+  display: none; 
+  position: fixed; 
+  z-index: 1000; 
+  left: 0;
+  top: 0;
+  width: 100%; 
+  height: 100%; 
+  overflow: auto; 
+  background-color: rgb(0,0,0); 
+  background-color: rgba(0,0,0,0.4); 
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+.modal .modal-content h2 {
+  color: #5a2d8c; /* Sets the color to the primary purple color */
+  font-weight: bold;
+  font-size: 24px; /* Sets a larger font size, adjust as needed */
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Styling for buttons */:root {
+  --primary-color: #7a43b6; 
+  --secondary-color: #acbcc9; 
+  --background-color: #fff; 
+  --text-color: #333; 
+  --title-color: #222;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Open Sans', sans-serif;
+}
+
+#app-title, #pac-card {
+  background-color: var(--secondary-color);
   padding: 10px;
   border-radius: 4px;
   border: 5px solid #ccc;
@@ -45,44 +137,9 @@ html, body {
   max-width: 350px;
   min-width: 280px;
   top: 100px;
-  right: 10px;
+  right: 0px;
 }
 
-/* About Button */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1000; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
-
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto; /* 15% from the top and centered */
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%; /* Could be more or less, depending on screen size */
-}
-
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
 
 /* Styling for buttons */
 .custom-map-control-button, #about-button {
@@ -91,6 +148,112 @@ html, body {
   border: none;
   border-radius: 4px;
   padding: 10px 15px;
+  margin: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.custom-map-control-button:hover, #about-button:hover {
+  background-color: #5a2d8c; 
+}
+
+#about-button h2 {
+  color: #fff !important; /* Explicitly setting the text color of h2 to white */
+}
+  
+/* Typography */
+h2, .panel-title, #pac-title {
+  font-family: 'Open Sans', sans-serif;
+  color: var(--title-color);
+  font-size: 18px;
+  font-weight: 400;
+  padding: 6px 12px;
+}
+
+/* Style for the place name */
+.panel-row .place {
+  font-family: 'Open Sans', arial, sans-serif;
+  font-size: 0.9em; /* Maintain current size */
+  font-weight: bold; /* Make text bold */
+  margin: 5px 0;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+/* Style for the distance text */
+.panel-row .distanceText {
+  font-family: 'Open Sans', arial, sans-serif;
+  font-size: 0.8em; /* Slightly smaller font size */
+  font-weight: normal; /* Normal weight for distance text */
+  color: rgb(151, 151, 151); /* Maintain current color */
+  margin: 5px 0;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+/* Layout and Spacing */
+#page-container {
+  display: grid;
+  grid-template-columns: auto 0; /*sets width of child items: map and side-container; side-container starts at 0*/
+  overflow: hidden;
+}
+
+#map, #side-container {
+  margin: 10px;
+}
+
+#map {
+  display: flex;
+  height: 100vh;
+  position: relative;
+}
+
+#side-container {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: auto auto; /*sets height of child items: pac-card and panel*/
+  background-image: linear-gradient(30deg, #fff, aliceblue);
+  overflow: hidden;
+}
+
+#panel {
+  overflow: auto;
+  transition: all 0.2s ease-out;
+}
+
+/* Panel Row Styles */
+.station-row {
+  border-bottom: 1px solid #e0e0e0; /* Light grey border */
+  padding: 10px;
+  margin-bottom: 3px; /* Space between rows */
+  background-color: #fff;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none; /* Remove border for the last row */
+  }
+
+  &:hover {
+    background-color: #dadada; /* light grey background on hover for indication */
+  }
+}
+
+/* Responsive Design */
+@media screen and (max-width: 600px) {
+  #pac-card, #panel, #side-container {
+    width: 100%;
+    max-width: none;
+  }
+
+  #panel {
+    max-height: 50vh; /* Adjust for smaller screens */
+  }
+}
+.custom-map-control-button, #about-button {
+  background-color: var(--primary-color);
+  border: none;
+  border-radius: 4px;
+  padding: 5px;
   margin: 10px;
   font-size: 14px;
   cursor: pointer;
