@@ -459,40 +459,43 @@ function setupAboutButtonListener() {
 }
 
 function openAboutModal() {
-  // Content of the modal
-  const modalContent = `
+ // Check if modal already exists
+ let modal = document.querySelector(".modal");
+ if (!modal) {
+   // Create the modal if it doesn't exist
+   modal = document.createElement("div");
+   modal.classList.add("modal");
+   modal.innerHTML = `
   <div class="modal-content">
   <span class="close">&times;</span>
   <h2>About Madison CycleCare</h2>
-  <p>Madison CycleCare is developed by the Madison Cycling Enthusiast Group. Our goal is to make bike repair and maintenance easy and accessible for all cyclists in Madison.</p>
-  <h3>Bike Repair Tips</h3>
-  <ul>
-    <li>Regularly check and inflate your tires to the recommended pressure.</li>
-    <li>Keep your chain clean and lubricated for a smoother ride.</li>
-    <li>Inspect your brakes regularly to ensure they are functioning correctly.</li>
-    <li>For more detailed guides, visit <a href='https://example.com/bike-repair-tips' target='_blank'>our bike repair tips page</a>.</li>
-  </ul>
+<p>Madison CycleCare, a creation of Lisa Siewert and Jessica Steslow for their GEOG 576 final project at UW-Madison, aims to streamline bike repair and maintenance for cyclists in Madison.</p>
+<h3>Essential Bike Repair Tips</h3>
+<ul>
+  <li>Ensure your tires are always inflated to the recommended pressure levels for optimal performance.</li>
+  <li>Maintain a clean and well-lubricated chain to enhance your riding experience.</li>
+  <li>Regular brake inspections are crucial for safe cycling – always check their functionality.</li>
+  <li>For comprehensive bike maintenance guides, please visit <a href='https://www.rei.com/learn/expert-advice/bike-maintenance.html' target='_blank'>the REI Bike Maintenance Basics page</a>.</li>
+</ul>
+<p>This application is not only a tool for local cyclists but also serves as an academic contribution to the field of geographic information systems and its application in community services.</p>
 </div>
   `;
-
-  // Create the modal
-  const modal = document.createElement("div");
-  modal.classList.add("modal");
-  modal.innerHTML = modalContent;
   document.body.appendChild(modal);
 
   // Handle closing the modal
-  const closeButton = modal.querySelector(".close");
-  closeButton.onclick = function() {
+  modal.querySelector(".close").onclick = function() {
     modal.style.display = "none";
-  }
+  };
 
-  // Close the modal if clicked outside of the modal content
   window.onclick = function(event) {
     if (event.target === modal) {
       modal.style.display = "none";
     }
-  }
+  };
+}
+
+// Display the modal
+modal.style.display = "block";
 }
 
 // Initialize the application after DOM is loaded

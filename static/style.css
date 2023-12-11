@@ -85,7 +85,7 @@ html, body {
 }
 
 /* Styling for buttons */
-.custom-map-control-button {
+.custom-map-control-button, #about-button {
   background-color: var(--primary-color);
   color: var(--background-color);
   border: none;
@@ -96,16 +96,8 @@ html, body {
   cursor: pointer;
 }
 
-#about-button {
-  order: 2; /* Places the about button at the end */
-  background-color: var(--primary-color);
-  padding: 5px;
-  border-radius: 4px;
-  color: var(--background-color);
-}
-
 .custom-map-control-button:hover, #about-button:hover {
-  background-color: darken(var(--primary-color), 10%);
+  background-color: #5a2d8c; 
 }
 
 /* Typography */
