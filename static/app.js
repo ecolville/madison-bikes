@@ -161,7 +161,10 @@ function stationToMarker(station, map, infowindow) {
   });
 
   marker.addListener("click", () => {
-    // Create the content string for the infowindow
+    if (userCurrentLocation) {
+      calculateRouteToStation(userCurrentLocation, station);
+    }
+    //Create and open the info window for this marker
     const contentString = `
       <div>
         <p><strong>Description:</strong> ${station.properties.Description}</p>
