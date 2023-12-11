@@ -335,7 +335,7 @@ function panelTitle() {
   const rowElement = document.createElement("div");
   const nameElement = document.createElement("p");
   nameElement.classList.add("panel-title");
-  nameElement.textContent = "Bicycle Repair Stations by distance to address";
+  nameElement.textContent = "Bicycle Repair Stations Distance to Address";
   rowElement.appendChild(nameElement)
   return rowElement;
 };
