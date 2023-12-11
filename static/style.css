@@ -1,163 +1,93 @@
+:root {
+  --primary-color: #7a43b6; 
+  --secondary-color: #acbcc9; 
+  --background-color: #fff; 
+  --text-color: #333; 
+  --title-color: #222;
+}
+
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Open Sans', sans-serif;
 }
 
-#page-container {
-  display: grid;
-  grid-template-columns: auto 0; /*sets width of child items: map and side-container; side-container starts at 0*/
-  overflow: hidden;
-}
-
-#map {
-  display: flex;
-  height: 100vh;
-  position: relative; /* All items positioned 'absolute' are relative to this map div */
+#app-title, #pac-card {
+  background-color: var(--secondary-color);
+  padding: 10px;
+  border-radius: 4px;
+  border: 5px solid #ccc;
+  display: block;
+  position: absolute;
+  z-index: 100;
 }
 
 #app-title {
-  display: block;
-  position: absolute;
+  display: flex;
+  justify-content: space-between; /* Positions children at start and end */
+  align-items: center;
+  position: fixed;
   z-index: 100;
-  top: 10px;
-  left: 50px;
-  background-color: #fff;
-  padding: 10px;
-  border: 5px solid red;
-  border-radius: 4px;
+  top: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--secondary-color);
+  padding: 5px;
+  border-bottom: 2px solid #ccc;
 }
 
-#info-button {
-  display: block;
-  position: absolute;
-  z-index: 100;
-  top: 180px;
-  left: 50px;
-  background-color: orange;
-  padding: 10px;
-  border: 5px solid red;
-  border-radius: 4px;
-}
-
-#side-container {
-  display: grid;
-  height: 100vh;
-  grid-template-rows: auto auto; /*sets height of child items: pac-card and panel*/
-  background-image: linear-gradient(30deg, #fff, aliceblue);
-  background-color: #fff;
-  overflow: hidden;
-}
-
-#panel {
-  overflow: auto;
-  transition: all 0.2s ease-out;
-}
-
+/* Positioning of pac-card */
 #pac-card {
-  background-color: #fff;
-  border-radius: 5px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   max-width: 350px;
   min-width: 280px;
-  /*height: 130px;*/
-  display: block;
-  position: absolute;
-  z-index: 100;
-  top: 10px;
+  top: 100px;
   right: 10px;
 }
 
-/*
-#panel.open {
-  flex-basis: auto;
-}
-*/
-
-#panel .place {
-  font-family: "open sans", arial, sans-serif;
-  font-size: 0.9em; 
-  font-weight: bold; 
-  margin: 5px 0;
-  padding-left: 18px;
-  padding-right: 18px;
-}
-
-#panel .distanceText {
-  font-family: "open sans", arial, sans-serif;
-  font-size: 0.9em; 
-  font-weight: 400; 
-  color: rgb(151, 151, 151); 
-  margin: 5px 0;
-  padding-left: 18px;
-  padding-right: 18px;
+/* About Button */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-#pac-container {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  margin-left: 12px;
+.modal-content {
+  background-color: #fefefe;
+  margin: 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
 }
 
-#pac-input {
-  background-color: #fff;
-  font-family: Roboto;
-  font-size: 15px;
-  font-weight: 300;
-  width: calc(100% - 22px);
-  margin: 0;
-  padding: 0 11px;
-  text-overflow: ellipsis;
-  border: 1px solid #ccc;}
-
-#pac-input:focus {
-  border-color: #4d90fe;
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
 }
 
-#pac-title {
-  font-family: "open sans", arial, sans-serif;
-  color: #fff;
-  background-color: #acbcc9;
-  font-size: 18px;
-  font-weight: 400;
-  padding: 6px 12px;
-  border-radius: 5px 5px 0 0;
-}
-
-.hidden {
-  display: none;
-}
-
-.panel-title {
-  font-family: "open sans", arial, sans-serif;
-  font-size: 18px;
-  color: #fff;
-  background-color: #acbcc9;
-  font-size: 18px;
-  font-weight: 400;
-  padding: 6px 12px;
-  margin: 0 !important;
-}
-
-.station-row {
-  border-bottom: 1px solid #e0e0e0; /* Light grey border */
-  padding: 10px;
-  margin-bottom: 3px; /* Space between rows */
-  background-color: #fff;
-}
-
-.station-row:last-child {
-  border-bottom: none; /* Remove border for the last row */
-}
-
-.station-row:hover {
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
   cursor: pointer;
-  background-color: #dadada; /* light grey background on hover for indication */
 }
 
+/* Styling for buttons */
 .custom-map-control-button {
-  background-color: #4285F4; /* Google blue */
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--background-color);
   border: none;
   border-radius: 4px;
   padding: 10px 15px;
@@ -166,31 +96,100 @@ html, body {
   cursor: pointer;
 }
 
-.custom-map-control-button:hover {
-  background-color: #357ae8; /* Darker blue on hover */
+#about-button {
+  order: 2; /* Places the about button at the end */
+  background-color: var(--primary-color);
+  padding: 5px;
+  border-radius: 4px;
+  color: var(--background-color);
 }
 
-/* Mobile Responsiveness */
-@media screen and (max-width: 600px) {
-  #pac-card, #panel {
-    max-width: 95%;
-    left: 50%;
-    transform: translateX(-50%);
+.custom-map-control-button:hover, #about-button:hover {
+  background-color: darken(var(--primary-color), 10%);
+}
+
+/* Typography */
+h2, .panel-title, #pac-title {
+  font-family: 'Open Sans', sans-serif;
+  color: var(--title-color);
+  font-size: 18px;
+  font-weight: 400;
+  padding: 6px 12px;
+}
+
+/* Style for the place name */
+.panel-row .place {
+  font-family: 'Open Sans', arial, sans-serif;
+  font-size: 0.9em; /* Maintain current size */
+  font-weight: bold; /* Make text bold */
+  margin: 5px 0;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+/* Style for the distance text */
+.panel-row .distanceText {
+  font-family: 'Open Sans', arial, sans-serif;
+  font-size: 0.8em; /* Slightly smaller font size */
+  font-weight: normal; /* Normal weight for distance text */
+  color: rgb(151, 151, 151); /* Maintain current color */
+  margin: 5px 0;
+  padding-left: 18px;
+  padding-right: 18px;
+}
+
+/* Layout and Spacing */
+#page-container {
+  display: grid;
+  grid-template-columns: auto 0; /*sets width of child items: map and side-container; side-container starts at 0*/
+  overflow: hidden;
+}
+
+#map, #side-container {
+  margin: 10px;
+}
+
+#map {
+  display: flex;
+  height: 100vh;
+  position: relative;
+}
+
+#side-container {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: auto auto; /*sets height of child items: pac-card and panel*/
+  background-image: linear-gradient(30deg, #fff, aliceblue);
+  overflow: hidden;
+}
+
+#panel {
+  overflow: auto;
+  transition: all 0.2s ease-out;
+}
+
+/* Panel Row Styles */
+.station-row {
+  border-bottom: 1px solid #e0e0e0; /* Light grey border */
+  padding: 10px;
+  margin-bottom: 3px; /* Space between rows */
+  background-color: #fff;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none; /* Remove border for the last row */
   }
 
-  #panel {
-    top: initial; /* Resets top positioning for mobile */
-    max-height: 50vh; /* Adjust for smaller screens */
+  &:hover {
+    background-color: #dadada; /* light grey background on hover for indication */
   }
-}/* Mobile Responsiveness */
+}
+
+/* Responsive Design */
 @media screen and (max-width: 600px) {
-  #side-container {
+  #pac-card, #panel, #side-container {
     width: 100%;
     max-width: none;
-  }
-
-  #map, #side-container {
-    order: 1;
   }
 
   #panel {

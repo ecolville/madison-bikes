@@ -30,6 +30,7 @@ async function initialize() {
   initGeolocationWidget();
   fetchAndRenderRepairStations(MADISON);
   setupEventListeners();
+  setupAboutButtonListener();
 }
 
 function setupEventListeners() {
@@ -58,10 +59,10 @@ function initMap() {
       styles: mapStyles,
       clickableIcons: false,
       fullscreenControl: false,
-      mapTypeControl: false,
+      mapTypeControl: true,
       rotateControl: true,
       scaleControl: false,
-      streetViewControl: true,
+      streetViewControl: false,
       zoomControl: true,
   });
 
@@ -115,7 +116,7 @@ function stationToMarker(station, map, infowindow) {
 
   const enlargedIcon = {
     url: "bike_icon.png",
-    scaledSize: new google.maps.Size(35, 35), // Larger size
+    scaledSize: new google.maps.Size(35, 35), 
     origin: new google.maps.Point(0, 0),
     anchor: new google.maps.Point(15, 15)
   };
@@ -340,19 +341,18 @@ function panelTitle() {
 };
 
 function stationToPanelRow(station, index) {
-  // Add station details with text formatting
   const rowElement = document.createElement("div");
   rowElement.classList.add("station-row");
   rowElement.setAttribute("data-station-index", index);
   rowElement.dataset.stationId = station.properties.OBJECTID;
 
   const nameElement = document.createElement("p");
-  nameElement.classList.add("place");
+  nameElement.classList.add("place"); 
   nameElement.textContent = station.properties.Description;
   rowElement.appendChild(nameElement);
 
   const distanceTextElement = document.createElement("p");
-  distanceTextElement.classList.add("distanceText");
+  distanceTextElement.classList.add("distanceText"); 
   distanceTextElement.textContent = station.properties.distanceText;
   rowElement.appendChild(distanceTextElement);
 
@@ -450,3 +450,50 @@ function calculateRouteToStation(origin, station) {
     }
   });
 }
+
+function setupAboutButtonListener() {
+  const aboutButton = document.getElementById("about-button");
+  aboutButton.addEventListener("click", function() {
+    openAboutModal();
+  });
+}
+
+function openAboutModal() {
+  // Content of the modal
+  const modalContent = `
+  <div class="modal-content">
+  <span class="close">&times;</span>
+  <h2>About Madison CycleCare</h2>
+  <p>Madison CycleCare is developed by the Madison Cycling Enthusiast Group. Our goal is to make bike repair and maintenance easy and accessible for all cyclists in Madison.</p>
+  <h3>Bike Repair Tips</h3>
+  <ul>
+    <li>Regularly check and inflate your tires to the recommended pressure.</li>
+    <li>Keep your chain clean and lubricated for a smoother ride.</li>
+    <li>Inspect your brakes regularly to ensure they are functioning correctly.</li>
+    <li>For more detailed guides, visit <a href='https://example.com/bike-repair-tips' target='_blank'>our bike repair tips page</a>.</li>
+  </ul>
+</div>
+  `;
+
+  // Create the modal
+  const modal = document.createElement("div");
+  modal.classList.add("modal");
+  modal.innerHTML = modalContent;
+  document.body.appendChild(modal);
+
+  // Handle closing the modal
+  const closeButton = modal.querySelector(".close");
+  closeButton.onclick = function() {
+    modal.style.display = "none";
+  }
+
+  // Close the modal if clicked outside of the modal content
+  window.onclick = function(event) {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  }
+}
+
+// Initialize the application after DOM is loaded
+document.addEventListener('DOMContentLoaded', initialize);
