@@ -7,28 +7,24 @@
     <script defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCmBgSWWPs4Ocit1Fe3gLNtgrU31DzUfKk&v=weekly&libraries=places&callback=initialize"></script>
   </head>
   <body>
-    <!-- Divs above map and panel -->
     <div id="app-title">
       <h1>Madison CycleCare: Your Guide to Bike Repairs</h1>
       <div id="about-button">
         <h2>About & Tips</h2>
       </div>
     </div>
-   
-    <div id="pac-card">
-      <div id="pac-title">Find the nearest location</div>
-      <div id="pac-container">
-        <input id="pac-input" type="text" placeholder="Enter an address" class="pac-target-input" autocomplete="off" />
-      </div>
-    </div>
-    <!-- Page Container to grid map and panel-->
+    
     <div id="page-container">
       <div id="map"></div>
       <div id="side-container">
-        <div id="panel" class="closed">
+        <div id="pac-card">
+          <div id="pac-title">Find the nearest location</div>
+          <div id="pac-container">
+            <input id="pac-input" type="text" placeholder="Enter an address" class="pac-target-input" autocomplete="off" />
+          </div>
         </div>
+        <div id="panel" class="closed"></div>
       </div>
     </div>
-
   </body>
 </html>
