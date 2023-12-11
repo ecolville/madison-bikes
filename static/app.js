@@ -177,9 +177,9 @@ function highlightPanelRow(stationId, highlight) {
   panelRows.forEach(row => {
     if (row.dataset.stationId == stationId) { // Ensure to use == for comparison
       if (highlight) {
-        row.style.backgroundColor = 'grey'; // Set the background color for highlighting
+        row.style.backgroundColor = '#dadada'; // Set the background color for highlighting
       } else {
-        row.style.backgroundColor = ''; // Reset the background color
+        row.style.backgroundColor = '#fff'; // Reset the background color
       }
     }
   });
@@ -308,6 +308,7 @@ function renderRepairStationsPanel() {
   
   if (slicedRepairStations.length == 0) {
     panel.classList.remove("open");
+    
     return;
   }
 
@@ -323,7 +324,8 @@ function renderRepairStationsPanel() {
     });
   // Open the panel
   panel.classList.add("open");
-
+  document.getElementById("page-container").style.gridTemplateColumns = "auto 350px"; // change grid from auto 0 to auto 350, opens panel in a different way than tutorial
+  document.getElementById("pac-card").style.right = '360px'; // moves pac-card with the panel opening
   return;
 }
 

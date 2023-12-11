@@ -4,44 +4,75 @@ html, body {
   padding: 0;
 }
 
-body {
-  display: flex;
+#page-container {
+  display: grid;
+  grid-template-columns: auto 0; /*sets width of child items: map and side-container; side-container starts at 0*/
+  overflow: hidden;
 }
 
 #map {
-  height: 100%;
-  flex-grow: 4;
-  flex-basis: auto; /*sets the initial size of the flex item*/
+  display: flex;
+  height: 100vh;
+  position: relative; /* All items positioned 'absolute' are relative to this map div */
+}
+
+#app-title {
+  display: block;
+  position: absolute;
+  z-index: 100;
+  top: 10px;
+  left: 50px;
+  background-color: #fff;
+  padding: 10px;
+  border: 5px solid red;
+  border-radius: 4px;
+}
+
+#info-button {
+  display: block;
+  position: absolute;
+  z-index: 100;
+  top: 180px;
+  left: 50px;
+  background-color: orange;
+  padding: 10px;
+  border: 5px solid red;
+  border-radius: 4px;
+}
+
+#side-container {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: auto auto; /*sets height of child items: pac-card and panel*/
+  background-image: linear-gradient(30deg, #fff, aliceblue);
+  background-color: #fff;
+  overflow: hidden;
 }
 
 #panel {
-  height: 100%;
-  flex-basis: 0;
-  flex-grow: 0;
   overflow: auto;
   transition: all 0.2s ease-out;
 }
 
 #pac-card {
-  /*
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  padding: 10px;
-    box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  outline: none;
-  */
   background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
   max-width: 350px;
-
+  min-width: 280px;
+  /*height: 130px;*/
+  display: block;
+  position: absolute;
+  z-index: 100;
+  top: 10px;
+  right: 10px;
 }
 
+/*
 #panel.open {
   flex-basis: auto;
 }
+*/
 
 #panel .place {
   font-family: "open sans", arial, sans-serif;
@@ -56,7 +87,7 @@ body {
   font-family: "open sans", arial, sans-serif;
   font-size: 0.9em; 
   font-weight: 400; 
-  color: silver; 
+  color: rgb(151, 151, 151); 
   margin: 5px 0;
   padding-left: 18px;
   padding-right: 18px;
@@ -84,11 +115,13 @@ body {
 }
 
 #pac-title {
+  font-family: "open sans", arial, sans-serif;
   color: #fff;
   background-color: #acbcc9;
   font-size: 18px;
   font-weight: 400;
   padding: 6px 12px;
+  border-radius: 5px 5px 0 0;
 }
 
 .hidden {
@@ -97,8 +130,7 @@ body {
 
 .panel-title {
   font-family: "open sans", arial, sans-serif;
-  font-size: 1.2em !important;
-  font-weight: 500 !important;
+  font-size: 18px;
   color: #fff;
   background-color: #acbcc9;
   font-size: 18px;
@@ -110,7 +142,8 @@ body {
 .station-row {
   border-bottom: 1px solid #e0e0e0; /* Light grey border */
   padding: 10px;
-  margin-bottom: 5px; /* Space between rows */
+  margin-bottom: 3px; /* Space between rows */
+  background-color: #fff;
 }
 
 .station-row:last-child {
@@ -119,7 +152,7 @@ body {
 
 .station-row:hover {
   cursor: pointer;
-  background-color: #f0f0f0; /* light grey background on hover for indication */
+  background-color: #dadada; /* light grey background on hover for indication */
 }
 
 .custom-map-control-button {
