@@ -38,7 +38,7 @@ This App is built on the following tools:
 
 ## Acknowledgments 
 
-- Thanks to this wonderful codelabs tutorial that walks through back-end development: https://developers.google.com/codelabs/maps-platform/full-stack-store-locator#0.
+- Thanks to this wonderful codelabs tutorial that walks through back-end development with Google Maps API: https://developers.google.com/codelabs/maps-platform/full-stack-store-locator#0.
 
 ## Authors
 - Lisa Siewert & Jessica Steslow UW-Madison GEOG 576 Final Project
