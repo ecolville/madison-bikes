@@ -2,7 +2,7 @@
 
 Madison CycleCare is a web application that allows users to easily find bicycle repair stations in the Madison, Wisconsin area. Bicycle Repair stations are shown on an easy to use web-map so the user can browse locations. Users can also type in an address to calculate which stations are closest, and preview the Google Maps cycling-route directions suggested to each of these stations. CycleCare makes it easy for cyclists in Madison to get to a convenient repair station.
 
-![Madison CycleCare App Screenshot]()
+![Madison CycleCare App Screenshot](https://github.com/ecolville/blob/main/madison-bikes/screenshots/Interactions.png)
 
 ## Features
 
