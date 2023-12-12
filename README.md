@@ -7,7 +7,7 @@ Madison CycleCare is a web application that allows users to easily find bicycle 
 ## Features
 
 - **Interactive Web Map**: Navigate the Madison, Wisconsin area with the familiar Google Maps user-interface.
-- **Smart Autocomplete Search for Addresses**: The App uses Google Maps API for smart lookup of nearby addresses with an autocomplete for easier use.
+- **Smart Autocomplete Search or Geolocation for Addresses**: The App uses Google Maps API for smart lookup of nearby addresses with an autocomplete for easier use, or allows the user to search for current location.
 - **Data imported through API**: Bicycle Repair Stations imported via an API call to the City of Madison's data portal which stores data in a **geojson and local cache for efficient client-end use.**
 - **Real-time navigation to Bicycle Repair Stations**: Uses Google Maps to calculate real-time directions and directions-based distances to Bicycle Repair Stations, with linked interactions between side panel and map displays.
 - **Handy Reference Links to Related Information**: Information on how simple bicycle repair and related City of Madison links are provided.
