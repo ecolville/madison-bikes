@@ -66,6 +66,10 @@ function initMap() {
       zoomControl: true,
   });
 
+  // Create a new instance of the bike layer and add it to the map
+  const bikeLayer = new google.maps.BicyclingLayer();
+  bikeLayer.setMap(map);
+
   infowindow = new google.maps.InfoWindow();
   originMarker = new google.maps.Marker({ map: map, visible: false });
   directionsService = new google.maps.DirectionsService();
