@@ -186,68 +186,6 @@ function highlightPanelRow(stationId, highlight) {
   });
 }
 
-// Function to initialize autocomplete widget
-function initAutocompleteWidget() {
-  // Build and add the autocomplete search bar
-  const placesAutoCompleteCardElement = document.getElementById("pac-card");
-  const placesAutoCompleteInputElement = placesAutoCompleteCardElement.querySelector(
-    "input"
-  );
-  const options = {
-    types: ["address"],
-    componentRestrictions: { country: "us" },
-    map,
-  };
-
-  // Make the search bar into a Places Autocomplete search bar and select
-  // which detail fields should be returned about the place that
-  // the user selects from the suggestions.
-  const autocomplete = new google.maps.places.Autocomplete(
-    placesAutoCompleteInputElement,
-    options
-  );
-  autocomplete.setFields(["address_components", "geometry", "name"]);
-  map.addListener("bounds_changed", () => {
-    autocomplete.setBounds(map.getBounds());
-  });
-
-  // Respond when a user selects an address
-  // Set the origin point when the user selects an address
-  originMarker = new google.maps.Marker({ map: map });
-  originMarker.setVisible(false);
-  let originLocation = map.getCenter();
-  
-  autocomplete.addListener("place_changed", async () => {
-    markers.forEach((c) => c.setMap(null)); // clear existing repair staions
-    originMarker.setVisible(false);
-    
-    const place = autocomplete.getPlace();
-    document.getElementById("panel").style.display = "block";
-
-    if (!place.geometry) {
-      // User entered the name of a Place that was not suggested and
-      // pressed the Enter key, or the Place Details request failed.
-      window.alert("No address available for input: '" + place.name + "'");
-      return;
-    }
-
-    // Update userCurrentLocation with the selected address
-    userCurrentLocation = place.geometry.location.toJSON(); // Convert to a plain object
-
-    // Recenter the map to the origin marker
-    map.setCenter(userCurrentLocation);
-    map.setZoom(15);
-    originMarker.setPosition(userCurrentLocation);
-    originMarker.setVisible(true);
-
-    await fetchAndRenderRepairStations(userCurrentLocation);
-    
-    // Recalculate distances with the new origin
-    await calculateDistances(userCurrentLocation, repairStations);
-    renderRepairStationsPanel();
-  });
-}
-
 //Function to handle distance calculations
 async function calculateDistances(origin, repairStations) {
 
@@ -386,61 +324,102 @@ function initGeolocationWidget() {
     locationButton = document.createElement("button");
     locationButton.id = "location-button";
     locationButton.textContent = "Use current location?";
-  locationButton.classList.add("custom-map-control-button");
-  document.getElementById("pac-card").appendChild(locationButton);
+    locationButton.classList.add("custom-map-control-button");
+    document.getElementById("pac-card").appendChild(locationButton);
   
-  // Respond when a user selects the geolocation button
-  locationButton.addEventListener("click", () => {
-    // Try HTML5 geolocation.
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          //store the user's current position
-          const userCurrentLocation = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-        
-          console.log("Location found");
-          //infoWindow.setContent("Location found.");        
-        
-          // Make the panel visible
-          document.getElementById("panel").style.display = "block";
-        },
-        async() => {
-          //put the pos value in the address bar
-          //need to convert lat lang to an address
-          
-          markers.forEach((c) => c.setMap(null)); // clear existing repair staions
-          originMarker.setVisible(false);
-          originLocation = map.getCenter();
-          const place = autocomplete.getPlace();
-          // Recenter the map to the selected address
-          originLocation = place.geometry.location;
-          map.setCenter(originLocation);
-          map.setZoom(15);
-          originMarker.setPosition(originLocation);
-          originMarker.setVisible(true);
+    // Respond when a user selects the geolocation button
+    locationButton.addEventListener("click", () => {
+      // Try HTML5 geolocation.
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            //Update userCurrentLocation
+            userCurrentLocation = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+            console.log("Location found: ", userCurrentLocation);
 
-          await fetchAndRenderRepairStations(originLocation.toJSON());
-          
-          // Use the selected address as the origin to calculate distances
-          // to each of the store locations
-          await calculateDistances(originLocation, repairStations);
-          renderRepairStationsPanel()
+           // Update map and markers
+           await updateMapAndMarkers(userCurrentLocation);
         },
+        ()=> {
+          window.alert("Error: Unable to retrieve your location.");
+        }
       );
     } else {
-      // Browser doesn't support Geolocation
-      window.alert(
-        browserHasGeolocation
-        ? "Error: The Geolocation service failed."
-        : "Error: Your browser doesn't support geolocation.",
-      );
+      window.alert("Error: Your browser doesn't support geolocation.");
     }
   });
-}
+}          
 };
+
+// Function to initialize autocomplete widget
+function initAutocompleteWidget() {
+  // Build and add the autocomplete search bar
+  const placesAutoCompleteCardElement = document.getElementById("pac-card");
+  const placesAutoCompleteInputElement = placesAutoCompleteCardElement.querySelector(
+    "input"
+  );
+  const options = {
+    types: ["address"],
+    componentRestrictions: { country: "us" },
+    map,
+  };
+
+  // Make the search bar into a Places Autocomplete search bar and select
+  // which detail fields should be returned about the place that
+  // the user selects from the suggestions.
+  const autocomplete = new google.maps.places.Autocomplete(
+    placesAutoCompleteInputElement,
+    options
+  );
+  autocomplete.setFields(["address_components", "geometry", "name"]);
+  map.addListener("bounds_changed", () => {
+    autocomplete.setBounds(map.getBounds());
+  });
+
+  // Respond when a user selects an address
+  // Set the origin point when the user selects an address
+  originMarker = new google.maps.Marker({ map: map });
+  originMarker.setVisible(false);
+  let originLocation = map.getCenter();
+  
+  autocomplete.addListener("place_changed", async () => {
+    markers.forEach((c) => c.setMap(null)); // clear existing repair staions
+    originMarker.setVisible(false);
+    
+    const place = autocomplete.getPlace();
+    if (!place.geometry) {
+      window.alert("No address available for input: '" + place.name + "'");
+      return;
+    }
+
+    // Update userCurrentLocation with the selected address
+    userCurrentLocation = place.geometry.location.toJSON(); 
+
+    //update map and marker
+    await updateMapAndMarkers(userCurrentLocation);
+  });
+}
+    
+async function updateMapAndMarkers(location) {
+  map.setCenter(location);
+  originMarker.setPosition(location);
+  originMarker.setVisible(true);
+
+  // Reset global variables for new calculations
+  distCalcs = [];
+  stationDistCalcs = [];
+  slicedRepairStations = [];
+
+  await fetchAndRenderRepairStations(location);
+
+  // Recalculate distances with new location and updated repair stations
+  await calculateDistances(location, repairStations);
+  // Render the panel with new distance data
+  renderRepairStationsPanel();
+}
 
 // Function to calculate the route to the selected station
 function calculateRouteToStation(origin, station) {
