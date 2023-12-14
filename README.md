@@ -39,6 +39,9 @@ This App is built on the following tools:
 3. Go - Google back-end/server-side language
 4. HTML, CSS, and JavaScript - front-end design
 
+## How to Build!!!
+This code was built with Go. In order to run the code, you must have Go installed and run "go run *.go" in the project directory. We built and ran this code within the Google Cloud Shell terminal. Then we were able to preview the web app via local host on port 8080.
+
 ## Data Sources 
 
 - **Google Maps**: Provides map backgrounds, user-interface, data handling (displays points on the map), Geolocation, Directions, and Distance calculation services.
